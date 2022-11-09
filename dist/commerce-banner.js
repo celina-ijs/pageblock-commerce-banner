@@ -93,32 +93,12 @@
     }
     async setData(value) {
       console.log("set data");
-      this.data = value;
-      this.uploader.visible = false;
-      this.img.visible = true;
-      this.img.url = value;
     }
     getTag() {
       return this.tag;
     }
     async setTag(value) {
       this.tag = value;
-      if (this.img) {
-        this.img.display = "flex";
-        this.img.width = this.tag.width;
-        this.img.height = this.tag.height;
-        switch (this.tag.align) {
-          case "left":
-            this.img.margin = { right: "auto" };
-            break;
-          case "center":
-            this.img.margin = { left: "auto", right: "auto" };
-            break;
-          case "right":
-            this.img.margin = { left: "auto" };
-            break;
-        }
-      }
       this.widthElm.value = value.width;
       this.heightElm.value = value.height;
       this.alignElm.selectedValue = value.align;
@@ -126,20 +106,12 @@
     }
     async edit() {
       console.log("edit");
-      let img_uploader = document.getElementsByTagName("i-upload")[0].getElementsByTagName("img")[0];
-      if (img_uploader != void 0 && img_uploader.src != void 0 && img_uploader.src != null)
-        this.cropBtn.visible = true;
-      this.tempData = this.img.url;
-      this.img.visible = false;
-      this.uploader.visible = true;
     }
     async confirm() {
       console.log("confirm");
-      this.setData(null);
     }
     async discard() {
       console.log("discard");
-      this.setData(null);
     }
     async config() {
       this.mdConfig.visible = true;
