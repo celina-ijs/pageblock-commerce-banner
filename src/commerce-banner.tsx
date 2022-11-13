@@ -10,7 +10,7 @@ import {
   Modal,
   RadioGroup,
   Button,
-  HStack
+  HStack,
 } from "@ijstech/components";
 import { PageBlock } from "./pageBlock.interface";
 import './commerce-banner.css';
@@ -18,7 +18,7 @@ import './commerce-banner.css';
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      ["i-section-commerce-banner"]: ImageBlock;
+      ["i-section-commerce-banner"]: CommerceBannerBlock;
     }
   }
 }
@@ -59,15 +59,43 @@ const autoItems = [
   },
 ];
 
+interface BannerPage {
+  background?: any,
+  goodsImg?: any,
+  title?: String,
+  content?: String,
+  price?: number
+}
+
 @customModule
-@customElements("i-section-image")
-export class ImageBlock extends Module implements PageBlock {
+@customElements("i-section-commerce-banner")
+export class CommerceBannerBlock extends Module implements PageBlock {
   private data: any;
   private mdConfig: Modal;
   private widthElm: Input;
   private heightElm: Input;
   private alignElm: RadioGroup;
   private autoElm: RadioGroup;
+  private pnlBanner: Panel;
+  private backgroundUploader: Upload;
+  private goodsImgUploader: Upload;
+  private titleInput: Input;
+  private contentInput: Input;
+  private priceInput: Input;
+  private bannerPage: Panel;
+  private configPage: Panel;
+
+  private tempBackgroud: any;
+  private tempGoodsImg: any;
+  private temptitle: String;
+  private tempcontent: String;
+  private tempprice: String;
+
+  // params for flow control
+  // private numberOfPage: number = 1;
+  private bannerPageList: BannerPage[] = [{} as BannerPage];
+  private currentPage: number = 0;
+
 
   tag: any = {};
   defaultEdit: boolean = true;
@@ -77,6 +105,7 @@ export class ImageBlock extends Module implements PageBlock {
 
   async init() {
     super.init();
+    this.renderConfigPnl();
   }
 
   async getData() {
@@ -85,7 +114,14 @@ export class ImageBlock extends Module implements PageBlock {
 
   async setData(value: any) {
     console.log("set data");
-    
+  }
+
+  onLoad() {
+    console.log("onload")
+    this.renderConfigPnl();
+    // this.pnlBanner.append(
+
+    // )
   }
 
   getTag() {
@@ -102,15 +138,24 @@ export class ImageBlock extends Module implements PageBlock {
 
   async edit() {
     console.log("edit");
-    
+    this.configPage.visible = true;
+    this.bannerPage.visible = false;
   }
 
   async confirm() {
     console.log("confirm");
+    this.renderBanner();
+    this.configPage.visible = false;
+    this.bannerPage.visible = true;
   }
 
   async discard() {
-    console.log("discard");
+    console.log("discard = comfirm");
+
+    this.setBannerItem();
+    this.renderBanner();
+    this.configPage.visible = false;
+    this.bannerPage.visible = true;
   }
 
   async config() {
@@ -141,6 +186,110 @@ export class ImageBlock extends Module implements PageBlock {
 
   onChangeAuto(source: Control, event: Event) {
     console.log("auto: ", (source as RadioGroup).selectedValue);
+  }
+
+  async handleBackgroundUploaderOnChange(control: Control, files: any[]) {
+    if (files && files[0]) {
+      this.tempBackgroud = await this.backgroundUploader.toBase64(files[0]);
+    }
+  }
+
+  async handleImgUploaderOnChange(control: Control, files: any[]) {
+    if (files && files[0]) {
+      this.tempGoodsImg = await this.goodsImgUploader.toBase64(files[0]);
+    }
+  }
+
+  setBannerItem() {
+    let item = {
+
+      background: this.tempBackgroud,
+      goodsImg: this.tempGoodsImg,
+      title: this.titleInput.value,
+      content: this.contentInput.value,
+      price: this.priceInput.value
+
+    } as BannerPage;
+
+    // check if it is new page
+    if (this.bannerPageList.length < this.currentPage + 1) {
+      this.bannerPageList.push(item)
+    } else {
+      this.bannerPageList[this.currentPage] = item;
+    }
+  }
+
+  setTitle() {
+    console.log("setTitle");
+    console.log(this.titleInput.value);
+  }
+
+  setContent() {
+    console.log("setContent");
+    console.log(this.contentInput.value);
+  }
+
+  setPrice() {
+    console.log("setPrice");
+    console.log(this.priceInput.value);
+  }
+
+  renderBanner() {
+    this.bannerPage.innerHTML = "";
+    // this.bannerPage.background.image = this.bannerPageList[this.currentPage].background;
+    this.bannerPage.style.backgroundImage = "linear-gradient(to bottom, rgb(0 0 0 / 6%), rgb(0 0 0 / 80%)),url(" + this.bannerPageList[this.currentPage].background + ")";
+
+    this.bannerPage.append(
+
+      <i-hstack width='100%'>
+
+        <i-vstack width="50%" gap={10} padding={{ left: '3rem', top: '4rem', right: '2rem', bottom: '2rem' }} minHeight={300}>
+          <i-vstack width='100%' gap={10}>
+            <i-label caption={this.bannerPageList[this.currentPage].title + ""} font={{ bold: true, size: '40px', color: 'white' }} overflowWrap={'break-word'}></i-label>
+            <i-label caption={this.bannerPageList[this.currentPage].content + ""} font={{ color: 'white' }}></i-label>
+          </i-vstack>
+          <i-hstack width='100%' gap={10} verticalAlignment="center" margin={{ top: '3rem' }}>
+            <i-button caption={"Add to cart"} icon={{ name: "shopping-cart" }} font={{ color: 'black' }} background={{ color: 'white' }} padding={{ top: 13, right: 24, bottom: 12, left: 24 }} />
+            <i-label caption={"Starting at $" + this.bannerPageList[this.currentPage].price} font={{ color: 'white' }}></i-label>
+          </i-hstack>
+        </i-vstack>
+
+        <i-vstack width="50%" padding={{ left: '3rem', top: '4rem', right: '2rem', bottom: '2rem' }}>
+          <i-image url={this.bannerPageList[this.currentPage].goodsImg}></i-image>
+        </i-vstack>
+
+      </i-hstack>
+    )
+  }
+
+  navToPrevPage() {
+    this.currentPage = (this.currentPage != 0) ? this.currentPage - 1 : this.currentPage;
+    this.setBannerItem();
+    this.renderBanner();
+  }
+
+  navToNextPage() {
+    this.currentPage = (this.currentPage < this.bannerPageList.length - 1) ? this.currentPage + 1 : this.currentPage;
+    this.setBannerItem()
+    this.renderBanner();
+  }
+
+  addPage() {
+    this.bannerPageList.push(
+      {} as BannerPage
+    )
+
+  }
+
+  removePage() {
+    this.bannerPageList.splice(this.currentPage, 1);
+    this.setBannerItem()
+  }
+
+  renderConfigPnl() {
+    this.titleInput.value = "";
+    this.contentInput.value = "";
+    this.priceInput.value = "";
   }
 
   render() {
@@ -242,8 +391,50 @@ export class ImageBlock extends Module implements PageBlock {
             ></i-button>
           </i-hstack>
         </i-modal>
-        
-        <i-panel id={"pnlBanner"}>
+        <i-panel id={"pnlBanner"} width='100%'>
+
+          <i-panel id='configPage' width='100%'>
+
+          <i-vstack width='100%' horizontalAlignment="center">
+
+            <i-hstack gap={5} verticalAlignment="center">
+              {/* <i-label caption={`Current page is ${this.currentPage} / ${this.bannerPageList.length}`}></i-label> */}
+              {/* <i-label caption={this.currentPage + ""}></i-label> */}
+              <i-upload
+                width={'300px'}
+                height={'300px'}
+                id={"backgroundUploader"}
+                caption={"Upload background image here"}
+                border={{ width: 1, style: 'dashed' }}
+                onChanged={this.handleBackgroundUploaderOnChange}
+              ></i-upload>
+              <i-upload
+                width={'300px'}
+                height={'300px'}
+                id={"goodsImgUploader"}
+                caption={"Upload goods image here"}
+                border={{ width: 1, style: 'dashed' }}
+                onChanged={this.handleImgUploaderOnChange}
+              ></i-upload>
+            </i-hstack>
+
+            <i-hstack gap={5} margin={{ top: 20, bottom: 20 }}>
+              <i-input id='titleInput' inputType="textarea" placeholder="Input the title here" width={500} height={300} onChanged={this.setTitle}></i-input>
+              <i-input id='contentInput' inputType="textarea" placeholder="Input the content here" width={500} height={300} onChanged={this.setContent}></i-input>
+              <i-input id='priceInput' inputType="number" border={{ width: 1, style: 'solid' }} placeholder="Input the price here" width={300} onChanged={this.setPrice}></i-input>
+            </i-hstack>
+
+            <i-hstack width='100%' horizontalAlignment="center" verticalAlignment="end" gap={7} margin={{ bottom: '1 rem' }}>
+              <i-button icon={{ name: 'arrow-left' }} width={100} height={50} onClick={this.navToPrevPage} />
+              <i-button icon={{ name: 'plus' }} width={100} height={50} onClick={this.addPage} />
+              <i-button icon={{ name: 'minus' }} width={100} height={50} onClick={this.removePage} />
+              <i-button icon={{ name: 'arrow-right' }} width={100} height={50} onClick={this.navToNextPage} />
+            </i-hstack>
+
+            </i-vstack>
+          </i-panel>
+
+          <i-panel id='bannerPage' width='100%' visible={false} minHeight={300} />
 
         </i-panel>
       </i-panel>
