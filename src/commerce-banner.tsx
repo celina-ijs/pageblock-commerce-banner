@@ -9,6 +9,7 @@ import {
   customModule,
   Modal,
   RadioGroup,
+  Label,
   Button,
   HStack,
 } from "@ijstech/components";
@@ -84,6 +85,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
   private priceInput: Input;
   private bannerPage: Panel;
   private configPage: Panel;
+  private currentPageLabel: Label;
 
   private tempBackgroud: any;
   private tempGoodsImg: any;
@@ -105,7 +107,8 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
   async init() {
     super.init();
-    this.renderConfigPnl();
+    this.preConfig();
+    // this.renderConfigPnl();
   }
 
   async getData() {
@@ -113,15 +116,12 @@ export class CommerceBannerBlock extends Module implements PageBlock {
   }
 
   async setData(value: any) {
-    console.log("set data");
+    // console.log("set data");
   }
 
   onLoad() {
     console.log("onload")
-    this.renderConfigPnl();
-    // this.pnlBanner.append(
-
-    // )
+    // this.renderConfigPnl();
   }
 
   getTag() {
@@ -167,7 +167,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
   }
 
   async onConfigSave() {
-    console.log("onConfigSave");
+    // console.log("onConfigSave");
     this.tag.width = this.widthElm.value;
     this.tag.height = this.heightElm.value;
     this.tag.align = this.alignElm.selectedValue;
@@ -200,7 +200,12 @@ export class CommerceBannerBlock extends Module implements PageBlock {
     }
   }
 
+  preConfig() {
+    this.currentPageLabel.caption = `Current page is 1 / 1`;
+  }
+
   setBannerItem() {
+    // console.log("setBannerItem: page: " + this.currentPage)
     let item = {
 
       background: this.tempBackgroud,
@@ -213,25 +218,20 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
     // check if it is new page
     if (this.bannerPageList.length < this.currentPage + 1) {
+      console.log("setting new page")
       this.bannerPageList.push(item)
     } else {
+      console.log("setting old page")
       this.bannerPageList[this.currentPage] = item;
     }
+
+    // console.log(this.bannerPageList)
   }
 
-  setTitle() {
-    console.log("setTitle");
-    console.log(this.titleInput.value);
-  }
-
-  setContent() {
-    console.log("setContent");
-    console.log(this.contentInput.value);
-  }
-
-  setPrice() {
-    console.log("setPrice");
-    console.log(this.priceInput.value);
+  resetConfigPnl() {
+    this.titleInput.value = "";
+    this.contentInput.value = "";
+    this.priceInput.value = "";
   }
 
   renderBanner() {
@@ -263,33 +263,58 @@ export class CommerceBannerBlock extends Module implements PageBlock {
   }
 
   navToPrevPage() {
-    this.currentPage = (this.currentPage != 0) ? this.currentPage - 1 : this.currentPage;
     this.setBannerItem();
-    this.renderBanner();
+    this.currentPage = (this.currentPage != 0) ? this.currentPage - 1 : 0;
+    console.log("navToPrevPage: page " + (this.currentPage + 1));
+    // this.resetConfigPnl();
+    this.renderConfigPnl();
+
+    // this.renderBanner();
   }
 
   navToNextPage() {
-    this.currentPage = (this.currentPage < this.bannerPageList.length - 1) ? this.currentPage + 1 : this.currentPage;
     this.setBannerItem()
-    this.renderBanner();
+    this.currentPage = (this.currentPage < this.bannerPageList.length - 1) ? this.currentPage + 1 : this.currentPage;
+    // console.log("navToNextPage: page " + (this.currentPage + 1));
+    // this.resetConfigPnl();
+    this.renderConfigPnl();
+    // this.renderBanner();
   }
 
   addPage() {
+    console.log("addPage")
+    this.setBannerItem()
+    this.currentPageLabel.caption = `Current page is ${this.currentPage + 1} / ${this.bannerPageList.length + 1}`;
     this.bannerPageList.push(
       {} as BannerPage
     )
-
   }
 
   removePage() {
-    this.bannerPageList.splice(this.currentPage, 1);
-    this.setBannerItem()
+    // this.setBannerItem()
+    let deletePage = this.currentPage;
+
+    if (this.bannerPageList.length != 1) {
+
+      if (deletePage == this.bannerPageList.length-1) {
+        this.currentPage--;
+      } 
+
+      let tempItem = this.bannerPageList[deletePage]
+      this.bannerPageList = this.bannerPageList.filter(item => item != tempItem)
+      
+    }
+    this.renderConfigPnl()
   }
 
   renderConfigPnl() {
-    this.titleInput.value = "";
-    this.contentInput.value = "";
-    this.priceInput.value = "";
+    console.log(this.bannerPageList)
+    console.log(this.currentPage)
+
+    this.currentPageLabel.caption = `Current page is ${this.currentPage + 1} / ${this.bannerPageList.length}`;
+    this.titleInput.value=this.bannerPageList[this.currentPage].title;
+    this.contentInput.value=this.bannerPageList[this.currentPage].content;
+    this.priceInput.value=this.bannerPageList[this.currentPage].price;
   }
 
   render() {
@@ -304,74 +329,30 @@ export class CommerceBannerBlock extends Module implements PageBlock {
           closeIcon={{ name: "times", fill: "#aaa" }}
         >
           <i-hstack justifyContent={"start"} alignItems={"start"}>
-            <i-panel
-              width={"30%"}
-              padding={{ top: 5, bottom: 5, left: 5, right: 5 }}
-            >
-              <i-input
-                id={"widthElm"}
-                caption={"Width"}
-                width={"100%"}
-                captionWidth={"46px"}
-              ></i-input>
+
+            <i-panel width={"30%"} padding={{ top: 5, bottom: 5, left: 5, right: 5 }}>
+              <i-input id={"widthElm"} caption={"Width"} width={"100%"} captionWidth={"46px"} />
             </i-panel>
-            <i-panel
-              width={"30%"}
-              padding={{ top: 5, bottom: 5, left: 5, right: 5 }}
-            >
-              <i-input
-                id={"heightElm"}
-                caption={"Height"}
-                width={"100%"}
-                captionWidth={"50px"}
-              ></i-input>
+
+            <i-panel width={"30%"} padding={{ top: 5, bottom: 5, left: 5, right: 5 }} >
+              <i-input id={"heightElm"} caption={"Height"} width={"100%"} captionWidth={"50px"} />
             </i-panel>
-            <i-panel
-              width={"40%"}
-              padding={{ top: 5, bottom: 5, left: 5, right: 5 }}
-            >
-              <i-label
-                width={100}
-                caption="Align"
-                margin={{ bottom: 8 }}
-              ></i-label>
-              <i-radio-group
-                id="alignElm"
-                width={"100%"}
-                selectedValue="left"
-                radioItems={alignItems}
-                onChanged={this.onChangeAlign}
-                display="block"
-              ></i-radio-group>
+
+            <i-panel width={"40%"} padding={{ top: 5, bottom: 5, left: 5, right: 5 }} >
+              <i-label width={100} caption="Align" margin={{ bottom: 8 }} />
+              <i-radio-group id="alignElm" width={"100%"} selectedValue="left" radioItems={alignItems} onChanged={this.onChangeAlign} display="block" />
             </i-panel>
+
           </i-hstack>
 
           <i-hstack justifyContent={"start"} alignItems={"center"}>
-            <i-panel
-              width={"100%"}
-              padding={{ top: 5, bottom: 5, left: 5, right: 5 }}
-            >
-              <i-label
-                width={100}
-                caption="Auto"
-                margin={{ bottom: 8 }}
-              ></i-label>
-              <i-radio-group
-                id="autoElm"
-                width={"100%"}
-                selectedValue="left"
-                radioItems={autoItems}
-                onChanged={this.onChangeAuto}
-                display="block"
-              ></i-radio-group>
+            <i-panel width={"100%"} padding={{ top: 5, bottom: 5, left: 5, right: 5 }} >
+              <i-label width={100} caption="Auto" margin={{ bottom: 8 }} />
+              <i-radio-group id="autoElm" width={"100%"} selectedValue="left" radioItems={autoItems} onChanged={this.onChangeAuto} display="block" />
             </i-panel>
           </i-hstack>
 
-          <i-hstack
-            justifyContent={"end"}
-            alignItems={"center"}
-            padding={{ top: 5, bottom: 5 }}
-          >
+          <i-hstack justifyContent={"end"} alignItems={"center"} padding={{ top: 5, bottom: 5 }}>
             <i-button
               caption={"Cancel"}
               padding={{ top: 5, bottom: 5, left: 10, right: 10 }}
@@ -394,44 +375,43 @@ export class CommerceBannerBlock extends Module implements PageBlock {
         <i-panel id={"pnlBanner"} width='100%'>
 
           <i-panel id='configPage' width='100%'>
+            <i-vstack width='100%' horizontalAlignment="center">
 
-          <i-vstack width='100%' horizontalAlignment="center">
+              <i-hstack gap={5} verticalAlignment="center">
+                <i-label id="currentPageLabel"></i-label>
+                <i-upload
+                  width={'300px'}
+                  height={'300px'}
+                  id={"backgroundUploader"}
+                  caption={"Upload background image here"}
+                  border={{ width: 1, style: 'dashed' }}
+                  onChanged={this.handleBackgroundUploaderOnChange}
+                ></i-upload>
+                <i-upload
+                  width={'300px'}
+                  height={'300px'}
+                  id={"goodsImgUploader"}
+                  caption={"Upload goods image here"}
+                  border={{ width: 1, style: 'dashed' }}
+                  onChanged={this.handleImgUploaderOnChange}
+                ></i-upload>
+              </i-hstack>
 
-            <i-hstack gap={5} verticalAlignment="center">
-              {/* <i-label caption={`Current page is ${this.currentPage} / ${this.bannerPageList.length}`}></i-label> */}
-              {/* <i-label caption={this.currentPage + ""}></i-label> */}
-              <i-upload
-                width={'300px'}
-                height={'300px'}
-                id={"backgroundUploader"}
-                caption={"Upload background image here"}
-                border={{ width: 1, style: 'dashed' }}
-                onChanged={this.handleBackgroundUploaderOnChange}
-              ></i-upload>
-              <i-upload
-                width={'300px'}
-                height={'300px'}
-                id={"goodsImgUploader"}
-                caption={"Upload goods image here"}
-                border={{ width: 1, style: 'dashed' }}
-                onChanged={this.handleImgUploaderOnChange}
-              ></i-upload>
-            </i-hstack>
+              <i-hstack gap={5} margin={{ top: 20, bottom: 20 }}>
+                <i-input id='titleInput' inputType="textarea" placeholder="Input the title here" width={500} height={300} ></i-input>
+                <i-input id='contentInput' inputType="textarea" placeholder="Input the content here" width={500} height={300} ></i-input>
+                <i-input id='priceInput' inputType="number" border={{ width: 1, style: 'solid' }} placeholder="Input the price here" width={300} ></i-input>
+              </i-hstack>
 
-            <i-hstack gap={5} margin={{ top: 20, bottom: 20 }}>
-              <i-input id='titleInput' inputType="textarea" placeholder="Input the title here" width={500} height={300} onChanged={this.setTitle}></i-input>
-              <i-input id='contentInput' inputType="textarea" placeholder="Input the content here" width={500} height={300} onChanged={this.setContent}></i-input>
-              <i-input id='priceInput' inputType="number" border={{ width: 1, style: 'solid' }} placeholder="Input the price here" width={300} onChanged={this.setPrice}></i-input>
-            </i-hstack>
-
-            <i-hstack width='100%' horizontalAlignment="center" verticalAlignment="end" gap={7} margin={{ bottom: '1 rem' }}>
-              <i-button icon={{ name: 'arrow-left' }} width={100} height={50} onClick={this.navToPrevPage} />
-              <i-button icon={{ name: 'plus' }} width={100} height={50} onClick={this.addPage} />
-              <i-button icon={{ name: 'minus' }} width={100} height={50} onClick={this.removePage} />
-              <i-button icon={{ name: 'arrow-right' }} width={100} height={50} onClick={this.navToNextPage} />
-            </i-hstack>
+              <i-hstack width='100%' horizontalAlignment="center" verticalAlignment="end" gap={7} margin={{ bottom: '1 rem' }}>
+                <i-button icon={{ name: 'arrow-left' }} width={100} height={50} onClick={this.navToPrevPage} />
+                <i-button icon={{ name: 'plus' }} width={100} height={50} onClick={this.addPage} />
+                <i-button icon={{ name: 'minus' }} width={100} height={50} onClick={this.removePage} />
+                <i-button icon={{ name: 'arrow-right' }} width={100} height={50} onClick={this.navToNextPage} />
+              </i-hstack>
 
             </i-vstack>
+
           </i-panel>
 
           <i-panel id='bannerPage' width='100%' visible={false} minHeight={300} />
