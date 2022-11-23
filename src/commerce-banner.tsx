@@ -68,10 +68,15 @@ interface BannerPage {
   price?: number
 }
 
+interface TempData {
+
+}
+
 @customModule
 @customElements("i-section-commerce-banner")
 export class CommerceBannerBlock extends Module implements PageBlock {
   private data: any;
+  private tempData: BannerPage[] = [];
   private mdConfig: Modal;
   private widthElm: Input;
   private heightElm: Input;
@@ -105,7 +110,6 @@ export class CommerceBannerBlock extends Module implements PageBlock {
   private bannerPageList: BannerPage[] = [{} as BannerPage];
   private currentPage: number = 0;
 
-
   tag: any = {};
   defaultEdit: boolean = true;
   readonly onConfirm: () => Promise<void>;
@@ -123,7 +127,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
   }
 
   async setData(value: any) {
-    // console.log("set data");
+    this.data = value;
   }
 
   getTag() {
@@ -139,21 +143,29 @@ export class CommerceBannerBlock extends Module implements PageBlock {
   }
 
   async edit() {
-    console.log("edit");
+
     this.renderConfigPnl();
     this.configPage.visible = true;
     this.bannerPage.visible = false;
   }
 
   async confirm() {
-    console.log("confirm");
+
+    let all = this.bannerPageList;
+    this.tempData = Object.assign([], all);
+
+    this.setData(this.tempData);
+    
     this.renderBanner();
     this.configPage.visible = false;
     this.bannerPage.visible = true;
   }
 
   async discard() {
-    console.log("discard is comfirm in dev mode");
+
+    let all = this.tempData;
+    this.bannerPageList = Object.assign([], all);
+
     this.renderBanner();
     this.configPage.visible = false;
     this.bannerPage.visible = true;
@@ -178,7 +190,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
   }
 
   validate(): boolean {
-    return !!this.data;
+    return true;
   }
 
   onChangeAlign(source: Control, event: Event) {
@@ -255,8 +267,10 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
     if (this.bannerPageList[this.currentPage].background) {
       this.bannerPage.style.backgroundImage = "linear-gradient(to bottom, rgb(0 0 0 / 6%), rgb(0 0 0 / 80%)),url(" + this.bannerPageList[this.currentPage].background + ")";
-      this.bannerPage.style.backgroundSize = "100% auto";
+    } else {
+      this.bannerPage.style.background = 'none';
     }
+    this.bannerPage.style.backgroundSize = "100% auto";
 
     this.bannerPage.append(
 
@@ -298,7 +312,6 @@ export class CommerceBannerBlock extends Module implements PageBlock {
         </i-hstack>
 
       </i-hstack>
-
     )
 
     // render dot panel
@@ -338,7 +351,6 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
   navToPrevPage() {
     this.currentPage = (this.currentPage != 0) ? this.currentPage - 1 : 0;
-    console.log("navToPrevPage: page " + (this.currentPage + 1));
     this.renderConfigPnl();
   }
 
@@ -348,6 +360,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
   }
 
   addPage() {
+
     this.currentPageLabel.caption = `Current page is ${this.currentPage + 1} / ${this.bannerPageList.length + 1}`;
     this.bannerPageList.push(
       {} as BannerPage
@@ -377,11 +390,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
       )
     }
 
-    console.log(this.bannerPageList)
-    console.log(this.backgroundUploaderList)
-    console.log(this.goodsImgUploaderList)
     this.renderConfigPnl();
-
   }
 
   removePage() {
@@ -404,9 +413,6 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
     }
     this.renderConfigPnl()
-    console.log(this.bannerPageList)
-    console.log(this.backgroundUploaderList)
-    console.log(this.goodsImgUploaderList)
   }
 
   renderConfigPnl() {

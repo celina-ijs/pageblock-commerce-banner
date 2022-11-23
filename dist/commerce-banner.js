@@ -40,8 +40,12 @@
   // src/commerce-banner.css.ts
   var import_components = __toModule(__require("@ijstech/components"));
   var Theme = import_components.Styles.Theme.ThemeVars;
-  import_components.Styles.cssRule("#cropImgWindow", {
-    $nest: {}
+  import_components.Styles.cssRule("#bannerPage", {
+    $nest: {
+      ".changePageBtn:hover": {
+        backgroundColor: "black"
+      }
+    }
   });
 
   // src/commerce-banner.tsx
@@ -79,20 +83,27 @@
       checked: false
     }
   ];
-  var ImageBlock = class extends import_components2.Module {
+  var CommerceBannerBlock = class extends import_components2.Module {
     constructor() {
       super(...arguments);
+      this.tempData = [];
+      this.backgroundUploaderList = [{}];
+      this.goodsImgUploaderList = [{}];
+      this.bannerPageList = [{}];
+      this.currentPage = 0;
       this.tag = {};
       this.defaultEdit = true;
     }
     async init() {
       super.init();
+      this.preConfig();
+      this.currentPage = 0;
     }
     async getData() {
       return this.data;
     }
     async setData(value) {
-      console.log("set data");
+      this.data = value;
     }
     getTag() {
       return this.tag;
@@ -105,13 +116,24 @@
       this.autoElm.selectedValue = value.auto;
     }
     async edit() {
-      console.log("edit");
+      this.renderConfigPnl();
+      this.configPage.visible = true;
+      this.bannerPage.visible = false;
     }
     async confirm() {
-      console.log("confirm");
+      let all = this.bannerPageList;
+      this.tempData = Object.assign([], all);
+      this.setData(this.tempData);
+      this.renderBanner();
+      this.configPage.visible = false;
+      this.bannerPage.visible = true;
     }
     async discard() {
-      console.log("discard");
+      let all = this.tempData;
+      this.bannerPageList = Object.assign([], all);
+      this.renderBanner();
+      this.configPage.visible = false;
+      this.bannerPage.visible = true;
     }
     async config() {
       this.mdConfig.visible = true;
@@ -120,7 +142,6 @@
       this.mdConfig.visible = false;
     }
     async onConfigSave() {
-      console.log("onConfigSave");
       this.tag.width = this.widthElm.value;
       this.tag.height = this.heightElm.value;
       this.tag.align = this.alignElm.selectedValue;
@@ -128,13 +149,270 @@
       this.mdConfig.visible = false;
     }
     validate() {
-      return !!this.data;
+      return true;
     }
     onChangeAlign(source, event) {
       console.log("align: ", source.selectedValue);
     }
     onChangeAuto(source, event) {
       console.log("auto: ", source.selectedValue);
+    }
+    async handleBackgroundUploaderOnChange(control, files) {
+      if (files && files[0]) {
+        const toBase64 = (file) => new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (error) => reject(error);
+        });
+        this.tempBackgroud = await toBase64(files[0]);
+        this.setBackgroundImg();
+      }
+    }
+    setBackgroundImg() {
+      this.bannerPageList[this.currentPage].background = this.tempBackgroud;
+    }
+    async handleImgUploaderOnChange(control, files) {
+      if (files && files[0]) {
+        const toBase64 = (file) => new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (error) => reject(error);
+        });
+        this.tempGoodsImg = await toBase64(files[0]);
+        this.setGoodsImg();
+      }
+    }
+    setGoodsImg() {
+      this.bannerPageList[this.currentPage].goodsImg = this.tempGoodsImg;
+    }
+    preConfig() {
+      this.currentPageLabel.caption = `Current page is 1 / 1`;
+      this.backgroundUploaderList[0] = /* @__PURE__ */ this.$render("i-upload", {
+        width: "300px",
+        height: "300px",
+        caption: "Upload background image here",
+        border: { width: 1, style: "dashed" },
+        onChanged: this.handleBackgroundUploaderOnChange
+      });
+      this.goodsImgUploaderList[0] = /* @__PURE__ */ this.$render("i-upload", {
+        width: "300px",
+        height: "300px",
+        caption: "Upload goods image here",
+        border: { width: 1, style: "dashed" },
+        onChanged: this.handleImgUploaderOnChange
+      });
+    }
+    renderBanner() {
+      this.bannerPage.innerHTML = "";
+      if (this.bannerPageList[this.currentPage].background) {
+        this.bannerPage.style.backgroundImage = "linear-gradient(to bottom, rgb(0 0 0 / 6%), rgb(0 0 0 / 80%)),url(" + this.bannerPageList[this.currentPage].background + ")";
+      } else {
+        this.bannerPage.style.background = "none";
+      }
+      this.bannerPage.style.backgroundSize = "100% auto";
+      this.bannerPage.append(/* @__PURE__ */ this.$render("i-hstack", {
+        width: "100%",
+        verticalAlignment: "center"
+      }, /* @__PURE__ */ this.$render("i-hstack", {
+        id: "leftBtn",
+        class: "changePageBtn pointer",
+        width: "3%",
+        height: "50px",
+        verticalAlignment: "center",
+        horizontalAlignment: "center"
+      }, /* @__PURE__ */ this.$render("i-icon", {
+        name: "angle-left",
+        width: "20px",
+        height: "20px",
+        fill: "white"
+      })), /* @__PURE__ */ this.$render("i-vstack", {
+        width: "94%"
+      }, /* @__PURE__ */ this.$render("i-hstack", {
+        width: "100%",
+        horizontalAlignment: "center"
+      }, /* @__PURE__ */ this.$render("i-vstack", {
+        width: "50%",
+        gap: 10,
+        padding: { left: "3rem", top: "4rem", right: "2rem", bottom: "2rem" },
+        minHeight: 300
+      }, /* @__PURE__ */ this.$render("i-vstack", {
+        width: "100%",
+        gap: 10
+      }, /* @__PURE__ */ this.$render("i-label", {
+        caption: this.bannerPageList[this.currentPage].title ? this.bannerPageList[this.currentPage].title + "" : "",
+        font: { bold: true, size: "40px", color: "white" },
+        overflowWrap: "break-word"
+      }), /* @__PURE__ */ this.$render("i-label", {
+        caption: this.bannerPageList[this.currentPage].content ? this.bannerPageList[this.currentPage].content + "" : "",
+        font: { color: "white" }
+      })), /* @__PURE__ */ this.$render("i-hstack", {
+        width: "100%",
+        gap: 10,
+        verticalAlignment: "center",
+        margin: { top: "3rem" }
+      }, /* @__PURE__ */ this.$render("i-button", {
+        caption: "Add to cart",
+        icon: { name: "shopping-cart" },
+        font: { color: "black" },
+        background: { color: "white" },
+        padding: { top: 13, right: 24, bottom: 12, left: 24 },
+        visible: this.bannerPageList[this.currentPage].price ? true : false
+      }), /* @__PURE__ */ this.$render("i-label", {
+        caption: this.bannerPageList[this.currentPage].price ? "Starting at $" + this.bannerPageList[this.currentPage].price : "",
+        font: { color: "white" }
+      }))), /* @__PURE__ */ this.$render("i-vstack", {
+        width: "50%",
+        padding: { left: "3rem", top: "4rem", right: "2rem", bottom: "2rem" }
+      }, /* @__PURE__ */ this.$render("i-image", {
+        url: this.bannerPageList[this.currentPage].goodsImg ? this.bannerPageList[this.currentPage].goodsImg : null
+      }))), /* @__PURE__ */ this.$render("i-hstack", {
+        id: "dotPanel",
+        width: "100%",
+        horizontalAlignment: "center",
+        margin: { bottom: "1.5rem" }
+      })), /* @__PURE__ */ this.$render("i-hstack", {
+        id: "rightBtn",
+        class: "changePageBtn pointer",
+        width: "3%",
+        height: "50px",
+        verticalAlignment: "center",
+        horizontalAlignment: "center"
+      }, /* @__PURE__ */ this.$render("i-icon", {
+        name: "angle-right",
+        width: "20px",
+        height: "20px",
+        fill: "white"
+      }))));
+      for (let i = 0; i < this.bannerPageList.length; i++) {
+        if (i != this.currentPage) {
+          this.dotPanel.append(/* @__PURE__ */ this.$render("i-icon", {
+            class: "pointer",
+            name: "dot-circle",
+            margin: { left: 2, right: 2 },
+            width: "20px",
+            height: "20px",
+            fill: "black",
+            onClick: () => {
+              this.currentPage = i;
+              this.renderBanner();
+            }
+          }));
+        } else {
+          this.dotPanel.append(/* @__PURE__ */ this.$render("i-icon", {
+            name: "dot-circle",
+            margin: { left: 2, right: 2 },
+            width: "20px",
+            height: "20px",
+            fill: "grey"
+          }));
+        }
+      }
+      this.leftBtn.onClick = () => {
+        if (this.currentPage != 0) {
+          this.currentPage--;
+          this.renderBanner();
+        } else {
+          this.currentPage = this.bannerPageList.length - 1;
+          this.renderBanner();
+        }
+      };
+      this.rightBtn.onClick = () => {
+        if (this.currentPage != this.bannerPageList.length - 1) {
+          this.currentPage++;
+          this.renderBanner();
+        } else {
+          this.currentPage = 0;
+          this.renderBanner();
+        }
+      };
+    }
+    navToPrevPage() {
+      this.currentPage = this.currentPage != 0 ? this.currentPage - 1 : 0;
+      this.renderConfigPnl();
+    }
+    navToNextPage() {
+      this.currentPage = this.currentPage < this.bannerPageList.length - 1 ? this.currentPage + 1 : this.currentPage;
+      this.renderConfigPnl();
+    }
+    addPage() {
+      this.currentPageLabel.caption = `Current page is ${this.currentPage + 1} / ${this.bannerPageList.length + 1}`;
+      this.bannerPageList.push({});
+      if (this.backgroundUploaderList.length <= this.currentPage) {
+        this.backgroundUploaderList.push(/* @__PURE__ */ this.$render("i-upload", {
+          width: "300px",
+          height: "300px",
+          caption: "Upload background image here",
+          border: { width: 1, style: "dashed" },
+          onChanged: this.handleBackgroundUploaderOnChange
+        }));
+      }
+      if (this.goodsImgUploaderList.length <= this.currentPage) {
+        this.goodsImgUploaderList.push(/* @__PURE__ */ this.$render("i-upload", {
+          width: "300px",
+          height: "300px",
+          caption: "Upload goods image here",
+          border: { width: 1, style: "dashed" },
+          onChanged: this.handleImgUploaderOnChange
+        }));
+      }
+      this.renderConfigPnl();
+    }
+    removePage() {
+      let deletePage = this.currentPage;
+      if (this.bannerPageList.length != 1) {
+        if (deletePage == this.bannerPageList.length - 1) {
+          this.currentPage--;
+        }
+        let tempItem = this.bannerPageList[deletePage];
+        this.bannerPageList = this.bannerPageList.filter((item) => item != tempItem);
+        tempItem = this.backgroundUploaderList[deletePage];
+        this.backgroundUploaderList = this.backgroundUploaderList.filter((item) => item != tempItem);
+        tempItem = this.goodsImgUploaderList[deletePage];
+        this.goodsImgUploaderList = this.goodsImgUploaderList.filter((item) => item != tempItem);
+      }
+      this.renderConfigPnl();
+    }
+    renderConfigPnl() {
+      this.configLeftBtn.opacity = this.currentPage == 0 ? 0.5 : 1;
+      this.configRightBtn.opacity = this.currentPage == this.bannerPageList.length - 1 ? 0.5 : 1;
+      this.configDeleteBtn.opacity = this.bannerPageList.length == 1 ? 0.5 : 1;
+      this.currentPageLabel.caption = `Current page is ${this.currentPage + 1} / ${this.bannerPageList.length}`;
+      this.titleInput.value = this.bannerPageList[this.currentPage].title;
+      this.contentInput.value = this.bannerPageList[this.currentPage].content;
+      this.priceInput.value = this.bannerPageList[this.currentPage].price;
+      if (this.backgroundUploaderList.length <= this.currentPage) {
+        this.backgroundUploaderList.push(/* @__PURE__ */ this.$render("i-upload", {
+          width: "300px",
+          height: "300px",
+          caption: "Upload background image here",
+          border: { width: 1, style: "dashed" },
+          onChanged: this.handleBackgroundUploaderOnChange
+        }));
+      }
+      this.backgroundUploaderWrapper.innerHTML = "";
+      this.backgroundUploaderWrapper.append(this.backgroundUploaderList[this.currentPage]);
+      if (this.goodsImgUploaderList.length <= this.currentPage) {
+        this.goodsImgUploaderList.push(/* @__PURE__ */ this.$render("i-upload", {
+          width: "300px",
+          height: "300px",
+          caption: "Upload goods image here",
+          border: { width: 1, style: "dashed" },
+          onChanged: this.handleImgUploaderOnChange
+        }));
+      }
+      this.goodsImgUploaderWrapper.innerHTML = "";
+      this.goodsImgUploaderWrapper.append(this.goodsImgUploaderList[this.currentPage]);
+    }
+    setTitle() {
+      this.bannerPageList[this.currentPage].title = this.titleInput.value;
+    }
+    setContent() {
+      this.bannerPageList[this.currentPage].content = this.contentInput.value;
+    }
+    setPrice() {
+      this.bannerPageList[this.currentPage].price = this.priceInput.value;
     }
     render() {
       return /* @__PURE__ */ this.$render("i-panel", null, /* @__PURE__ */ this.$render("i-modal", {
@@ -214,12 +492,93 @@
         font: { color: "white" },
         background: { color: "#77B24D" }
       }))), /* @__PURE__ */ this.$render("i-panel", {
-        id: "pnlBanner"
-      }));
+        width: "100%"
+      }, /* @__PURE__ */ this.$render("i-panel", {
+        id: "configPage",
+        width: "100%"
+      }, /* @__PURE__ */ this.$render("i-hstack", {
+        width: "100%",
+        horizontalAlignment: "center",
+        padding: { left: "1rem", top: "1rem", right: "1rem", bottom: "1rem" }
+      }, /* @__PURE__ */ this.$render("i-vstack", {
+        gap: 5,
+        margin: { top: 20, bottom: 20 },
+        width: "40%"
+      }, /* @__PURE__ */ this.$render("i-input", {
+        id: "titleInput",
+        inputType: "textarea",
+        placeholder: "Input the title here",
+        width: "100%",
+        height: 100,
+        onChanged: this.setTitle
+      }), /* @__PURE__ */ this.$render("i-input", {
+        id: "contentInput",
+        inputType: "textarea",
+        placeholder: "Input the content here",
+        width: "100%",
+        height: 300,
+        onChanged: this.setContent
+      }), /* @__PURE__ */ this.$render("i-input", {
+        id: "priceInput",
+        inputType: "textarea",
+        placeholder: "Input the price here",
+        width: "100%",
+        onChanged: this.setPrice
+      })), /* @__PURE__ */ this.$render("i-hstack", {
+        gap: 5,
+        verticalAlignment: "center",
+        padding: { left: "1rem" }
+      }, /* @__PURE__ */ this.$render("i-panel", {
+        id: "backgroundUploaderWrapper"
+      }), /* @__PURE__ */ this.$render("i-panel", {
+        id: "goodsImgUploaderWrapper"
+      }))), /* @__PURE__ */ this.$render("i-hstack", {
+        width: "100%",
+        horizontalAlignment: "center",
+        verticalAlignment: "end",
+        margin: { top: "1rem", bottom: "1rem" }
+      }, /* @__PURE__ */ this.$render("i-label", {
+        id: "currentPageLabel"
+      })), /* @__PURE__ */ this.$render("i-hstack", {
+        width: "100%",
+        horizontalAlignment: "center",
+        verticalAlignment: "end",
+        gap: 7,
+        margin: { bottom: "1rem" }
+      }, /* @__PURE__ */ this.$render("i-button", {
+        id: "configLeftBtn",
+        icon: { name: "arrow-left" },
+        width: 100,
+        height: 50,
+        onClick: this.navToPrevPage
+      }), /* @__PURE__ */ this.$render("i-button", {
+        id: "configAddBtn",
+        icon: { name: "plus" },
+        width: 100,
+        height: 50,
+        onClick: this.addPage
+      }), /* @__PURE__ */ this.$render("i-button", {
+        id: "configDeleteBtn",
+        icon: { name: "times-circle" },
+        width: 100,
+        height: 50,
+        onClick: this.removePage
+      }), /* @__PURE__ */ this.$render("i-button", {
+        id: "configRightBtn",
+        icon: { name: "arrow-right" },
+        width: 100,
+        height: 50,
+        onClick: this.navToNextPage
+      }))), /* @__PURE__ */ this.$render("i-panel", {
+        id: "bannerPage",
+        width: "100%",
+        visible: false,
+        minHeight: 300
+      })));
     }
   };
-  ImageBlock = __decorateClass([
+  CommerceBannerBlock = __decorateClass([
     import_components2.customModule,
-    (0, import_components2.customElements)("i-section-image")
-  ], ImageBlock);
+    (0, import_components2.customElements)("i-section-commerce-banner")
+  ], CommerceBannerBlock);
 })();
