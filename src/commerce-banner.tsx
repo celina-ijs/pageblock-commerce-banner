@@ -68,15 +68,15 @@ interface BannerPage {
   price?: number
 }
 
-interface TempData {
+interface confirmData {
 
 }
 
 @customModule
 @customElements("i-section-commerce-banner")
 export class CommerceBannerBlock extends Module implements PageBlock {
-  private data: any;
-  private tempData: BannerPage[] = [];
+  private data: any[] = [{}]
+  private confirmData: BannerPage[] = [];
   private mdConfig: Modal;
   private widthElm: Input;
   private heightElm: Input;
@@ -127,7 +127,9 @@ export class CommerceBannerBlock extends Module implements PageBlock {
   }
 
   async setData(value: any) {
-    this.data = value;
+
+    this.data = this.shallowCopyList(value)
+    this.renderBanner();
   }
 
   getTag() {
@@ -144,18 +146,46 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
   async edit() {
 
+    this.bannerPageList = this.shallowCopyList(this.data)
+
     this.renderConfigPnl();
     this.configPage.visible = true;
     this.bannerPage.visible = false;
   }
 
+  shallowCopyList(targetList: BannerPage[]) {
+    let newList = [] as BannerPage[];
+    for(let i=0; i<targetList.length; i++) {
+      newList.push({
+        background: targetList[i].background,
+        goodsImg: targetList[i].goodsImg,
+        title: targetList[i].title,
+        content: targetList[i].content,
+        price: targetList[i].price,
+      })
+
+      newList[i].background = (targetList[i].hasOwnProperty('background'))? targetList[i].background : ""
+      newList[i].goodsImg = (targetList[i].hasOwnProperty('goodsImg'))? targetList[i].goodsImg : ""
+      newList[i].title = (targetList[i].hasOwnProperty('title'))? targetList[i].title : ""
+      newList[i].content = (targetList[i].hasOwnProperty('content'))? targetList[i].content : ""
+      newList[i].price = (targetList[i].hasOwnProperty('price'))? targetList[i].price : 0;
+    }
+    return newList;
+  }
+
   async confirm() {
 
-    let all = this.bannerPageList;
-    this.tempData = Object.assign([], all);
+    console.log("confirm")
+    this.confirmData = this.shallowCopyList(this.bannerPageList);
 
-    this.setData(this.tempData);
-    
+    await this.setData(this.confirmData);
+
+    this.consoleLog();
+
+    // this.bannerPageList = []
+
+    this.consoleLog();
+
     this.renderBanner();
     this.configPage.visible = false;
     this.bannerPage.visible = true;
@@ -163,8 +193,14 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
   async discard() {
 
-    let all = this.tempData;
-    this.bannerPageList = Object.assign([], all);
+    console.log("discard")
+    this.bannerPageList = this.shallowCopyList(this.confirmData)
+
+    if(this.currentPage >= this.confirmData.length-1) {
+      this.currentPage = this.confirmData.length-1;
+    }
+
+    this.consoleLog()
 
     this.renderBanner();
     this.configPage.visible = false;
@@ -190,6 +226,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
   }
 
   validate(): boolean {
+    console.log("validate")
     return true;
   }
 
@@ -199,6 +236,12 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
   onChangeAuto(source: Control, event: Event) {
     console.log("auto: ", (source as RadioGroup).selectedValue);
+  }
+
+  async consoleLog(){
+    console.log("bannerList: ", this.bannerPageList)
+    console.log("confirmedData: ", this.confirmData)
+    console.log("this.data: ", await this.getData())
   }
 
   async handleBackgroundUploaderOnChange(control: Control, files: any[]) {
@@ -265,8 +308,8 @@ export class CommerceBannerBlock extends Module implements PageBlock {
   renderBanner() {
     this.bannerPage.innerHTML = "";
 
-    if (this.bannerPageList[this.currentPage].background) {
-      this.bannerPage.style.backgroundImage = "linear-gradient(to bottom, rgb(0 0 0 / 6%), rgb(0 0 0 / 80%)),url(" + this.bannerPageList[this.currentPage].background + ")";
+    if (this.data[this.currentPage].background && this.data[this.currentPage].background != "") {
+      this.bannerPage.style.backgroundImage = "linear-gradient(to bottom, rgb(0 0 0 / 6%), rgb(0 0 0 / 80%)),url(" + this.data[this.currentPage].background + ")";
     } else {
       this.bannerPage.style.background = 'none';
     }
@@ -286,19 +329,19 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
             <i-vstack width="50%" gap={10} padding={{ left: '3rem', top: '4rem', right: '2rem', bottom: '2rem' }} minHeight={300}>
               <i-vstack width='100%' gap={10}>
-                <i-label caption={(this.bannerPageList[this.currentPage].title) ? (this.bannerPageList[this.currentPage].title + "") : ""} font={{ bold: true, size: '40px', color: 'white' }}
+                <i-label caption={(this.data[this.currentPage].title) ? (this.data[this.currentPage].title + "") : ""} font={{ bold: true, size: '40px', color: 'white' }}
                   overflowWrap={'break-word'}></i-label>
-                <i-label caption={(this.bannerPageList[this.currentPage].content) ? (this.bannerPageList[this.currentPage].content + "") : ""} font={{ color: 'white' }}></i-label>
+                <i-label caption={(this.data[this.currentPage].content) ? (this.data[this.currentPage].content + "") : ""} font={{ color: 'white' }}></i-label>
               </i-vstack>
               <i-hstack width='100%' gap={10} verticalAlignment="center" margin={{ top: '3rem' }}>
                 <i-button caption={"Add to cart"} icon={{ name: "shopping-cart" }} font={{ color: 'black' }} background={{ color: 'white' }}
-                  padding={{ top: 13, right: 24, bottom: 12, left: 24 }} visible={((this.bannerPageList[this.currentPage].price) ? true : false)} />
-                <i-label caption={(this.bannerPageList[this.currentPage].price) ? "Starting at $" + this.bannerPageList[this.currentPage].price : ""} font={{ color: 'white' }}></i-label>
+                  padding={{ top: 13, right: 24, bottom: 12, left: 24 }} visible={((this.data[this.currentPage].price) ? true : false)} />
+                <i-label caption={(this.data[this.currentPage].price && this.data[this.currentPage].price!=-1) ? "Starting at $" + this.data[this.currentPage].price : ""} font={{ color: 'white' }}></i-label>
               </i-hstack>
             </i-vstack>
 
             <i-vstack width="50%" padding={{ left: '3rem', top: '4rem', right: '2rem', bottom: '2rem' }}>
-              <i-image url={(this.bannerPageList[this.currentPage].goodsImg) ? this.bannerPageList[this.currentPage].goodsImg : null}></i-image>
+              <i-image url={(this.data[this.currentPage].goodsImg) ? this.data[this.currentPage].goodsImg : null}></i-image>
             </i-vstack>
 
           </i-hstack>
@@ -315,7 +358,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
     )
 
     // render dot panel
-    for (let i = 0; i < this.bannerPageList.length; i++) {
+    for (let i = 0; i < this.data.length; i++) {
       if (i != this.currentPage) {
         this.dotPanel.append(
           <i-icon class="pointer" name="dot-circle" margin={{ left: 2, right: 2 }} width='20px' height='20px' fill={'black'} onClick={() => { this.currentPage = i; this.renderBanner(); }}></i-icon>
@@ -472,6 +515,9 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
   setPrice() {
     this.bannerPageList[this.currentPage].price = this.priceInput.value
+    console.log("setPrice")
+    console.log(this.bannerPageList)
+    console.log(this.confirmData)
   }
 
   render() {
