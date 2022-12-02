@@ -68,10 +68,6 @@ interface BannerPage {
   price?: number
 }
 
-interface confirmData {
-
-}
-
 @customModule
 @customElements("i-section-commerce-banner")
 export class CommerceBannerBlock extends Module implements PageBlock {
@@ -155,7 +151,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
   shallowCopyList(targetList: BannerPage[]) {
     let newList = [] as BannerPage[];
-    for(let i=0; i<targetList.length; i++) {
+    for (let i = 0; i < targetList.length; i++) {
       newList.push({
         background: targetList[i].background,
         goodsImg: targetList[i].goodsImg,
@@ -164,27 +160,23 @@ export class CommerceBannerBlock extends Module implements PageBlock {
         price: targetList[i].price,
       })
 
-      newList[i].background = (targetList[i].hasOwnProperty('background'))? targetList[i].background : ""
-      newList[i].goodsImg = (targetList[i].hasOwnProperty('goodsImg'))? targetList[i].goodsImg : ""
-      newList[i].title = (targetList[i].hasOwnProperty('title'))? targetList[i].title : ""
-      newList[i].content = (targetList[i].hasOwnProperty('content'))? targetList[i].content : ""
-      newList[i].price = (targetList[i].hasOwnProperty('price'))? targetList[i].price : 0;
+      newList[i].background = (targetList[i].hasOwnProperty('background')) ? targetList[i].background : ""
+      newList[i].goodsImg = (targetList[i].hasOwnProperty('goodsImg')) ? targetList[i].goodsImg : ""
+      newList[i].title = (targetList[i].hasOwnProperty('title')) ? targetList[i].title : ""
+      newList[i].content = (targetList[i].hasOwnProperty('content')) ? targetList[i].content : ""
+      newList[i].price = (targetList[i].hasOwnProperty('price')) ? targetList[i].price : 0;
     }
     return newList;
   }
 
   async confirm() {
 
-    console.log("confirm")
+    // console.log("confirm")
     this.confirmData = this.shallowCopyList(this.bannerPageList);
 
     await this.setData(this.confirmData);
 
-    this.consoleLog();
-
-    // this.bannerPageList = []
-
-    this.consoleLog();
+    // this.consoleLog();
 
     this.renderBanner();
     this.configPage.visible = false;
@@ -193,14 +185,14 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
   async discard() {
 
-    console.log("discard")
+    // console.log("discard")
     this.bannerPageList = this.shallowCopyList(this.confirmData)
 
-    if(this.currentPage >= this.confirmData.length-1) {
-      this.currentPage = this.confirmData.length-1;
+    if (this.currentPage >= this.confirmData.length - 1) {
+      this.currentPage = this.confirmData.length - 1;
     }
 
-    this.consoleLog()
+    // this.consoleLog()
 
     this.renderBanner();
     this.configPage.visible = false;
@@ -238,7 +230,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
     console.log("auto: ", (source as RadioGroup).selectedValue);
   }
 
-  async consoleLog(){
+  async consoleLog() {
     console.log("bannerList: ", this.bannerPageList)
     console.log("confirmedData: ", this.confirmData)
     console.log("this.data: ", await this.getData())
@@ -288,18 +280,16 @@ export class CommerceBannerBlock extends Module implements PageBlock {
     this.currentPageLabel.caption = `Current page is 1 / 1`;
     this.backgroundUploaderList[0] =
       <i-upload
-        width={'300px'}
-        height={'300px'}
-        caption={"Upload background image here"}
+        width={'100%'}
+        height={'280px'}
         border={{ width: 1, style: 'dashed' }}
         onChanged={this.handleBackgroundUploaderOnChange}
       ></i-upload>
 
     this.goodsImgUploaderList[0] =
       <i-upload
-        width={'300px'}
-        height={'300px'}
-        caption={"Upload goods image here"}
+        width={'100%'}
+        height={'280px'}
         border={{ width: 1, style: 'dashed' }}
         onChanged={this.handleImgUploaderOnChange}
       ></i-upload>
@@ -336,7 +326,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
               <i-hstack width='100%' gap={10} verticalAlignment="center" margin={{ top: '3rem' }}>
                 <i-button caption={"Add to cart"} icon={{ name: "shopping-cart" }} font={{ color: 'black' }} background={{ color: 'white' }}
                   padding={{ top: 13, right: 24, bottom: 12, left: 24 }} visible={((this.data[this.currentPage].price) ? true : false)} />
-                <i-label caption={(this.data[this.currentPage].price && this.data[this.currentPage].price!=-1) ? "Starting at $" + this.data[this.currentPage].price : ""} font={{ color: 'white' }}></i-label>
+                <i-label caption={(this.data[this.currentPage].price && this.data[this.currentPage].price != -1) ? "Starting at $" + this.data[this.currentPage].price : ""} font={{ color: 'white' }}></i-label>
               </i-hstack>
             </i-vstack>
 
@@ -412,8 +402,8 @@ export class CommerceBannerBlock extends Module implements PageBlock {
     if (this.backgroundUploaderList.length <= this.currentPage) {
       this.backgroundUploaderList.push(
         <i-upload
-          width={'300px'}
-          height={'300px'}
+          width={'100%'}
+          height={'280px'}
           caption={"Upload background image here"}
           border={{ width: 1, style: 'dashed' }}
           onChanged={this.handleBackgroundUploaderOnChange}
@@ -424,8 +414,8 @@ export class CommerceBannerBlock extends Module implements PageBlock {
     if (this.goodsImgUploaderList.length <= this.currentPage) {
       this.goodsImgUploaderList.push(
         <i-upload
-          width={'300px'}
-          height={'300px'}
+          width={'100%'}
+          height={'280px'}
           caption={"Upload goods image here"}
           border={{ width: 1, style: 'dashed' }}
           onChanged={this.handleImgUploaderOnChange}
@@ -472,9 +462,8 @@ export class CommerceBannerBlock extends Module implements PageBlock {
     if (this.backgroundUploaderList.length <= this.currentPage) {
       this.backgroundUploaderList.push(
         <i-upload
-          width={'300px'}
-          height={'300px'}
-          caption={"Upload background image here"}
+          width={'100%'}
+          height={'280px'}
           border={{ width: 1, style: 'dashed' }}
           onChanged={this.handleBackgroundUploaderOnChange}
         ></i-upload>
@@ -490,9 +479,8 @@ export class CommerceBannerBlock extends Module implements PageBlock {
     if (this.goodsImgUploaderList.length <= this.currentPage) {
       this.goodsImgUploaderList.push(
         <i-upload
-          width={'300px'}
-          height={'300px'}
-          caption={"Upload goods image here"}
+          width={'100%'}
+          height={'280px'}
           border={{ width: 1, style: 'dashed' }}
           onChanged={this.handleImgUploaderOnChange}
         ></i-upload>
@@ -515,9 +503,6 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
   setPrice() {
     this.bannerPageList[this.currentPage].price = this.priceInput.value
-    console.log("setPrice")
-    console.log(this.bannerPageList)
-    console.log(this.confirmData)
   }
 
   render() {
@@ -579,7 +564,79 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
           <i-panel id='configPage' width='100%'>
 
-            <i-hstack width='100%' horizontalAlignment="center" padding={{ left: '1rem', top: '1rem', right: '1rem', bottom: '1rem' }}>
+            <i-vstack id='innerConfigPage' width='100%' padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem', }} border={{ radius: '20px' }} background={{ color: '#eeeee4' }}>
+
+              <i-hstack width='100%' justifyContent="start" padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }}>
+                <i-label caption="Banner Configuration" font={{ bold: true }}></i-label>
+              </i-hstack>
+
+              <i-vstack id='innerTextConfigPage' width='100%' padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }} margin={{ bottom: '1rem' }}
+                border={{ topLeft: { radius: '20px' }, topRight: { radius: '20px' } }} background={{ color: 'white' }} gap={5}>
+
+                <i-hstack width='100%' justifyContent="start" border={{ bottom: { width: '2px', style: 'solid' } }} padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }}>
+                  <i-label caption="Text setting" font={{ bold: true }}></i-label>
+                </i-hstack>
+
+                <i-hstack width='100%' justifyContent="space-between" border={{ bottom: { width: '1px', style: 'solid' } }} gap={5} padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }}>
+                  <i-label caption="Banner title" stack={{ basis: '30%' }}></i-label>
+                  <i-input id='titleInput' stack={{ basis: '70%' }} inputType="textarea" placeholder="Input the title here" width={'100%'} onChanged={this.setTitle} height={'100px'}></i-input>
+                </i-hstack>
+
+                <i-hstack width='100%' justifyContent="space-between" border={{ bottom: { width: '1px', style: 'solid' } }} gap={5} padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }}>
+                  <i-label caption="Banner discription" stack={{ basis: '30%' }}></i-label>
+                  <i-input id='contentInput' stack={{ basis: '70%' }} inputType="textarea" placeholder="Input the discription here" width={'100%'} onChanged={this.setContent} height={'200px'}></i-input>
+                </i-hstack>
+
+                <i-hstack width='100%' justifyContent="space-between" border={{ bottom: { width: '1px', style: 'solid' } }} gap={5} padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }}>
+                  <i-label caption="Price" stack={{ basis: '30%' }}></i-label>
+                  <i-input id='priceInput' stack={{ basis: '70%' }} inputType="number" placeholder="Input the price here" width={'100%'} onChanged={this.setPrice}></i-input>
+                </i-hstack>
+
+              </i-vstack>
+
+              <i-vstack id='innerImageConfigPage' width='100%' margin={{ bottom: '1rem' }} background={{ color: 'white' }} border={{ bottomLeft: { radius: '20px' }, bottomRight: { radius: '20px' } }}
+                padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }}>
+
+                <i-hstack width='100%' justifyContent="start" border={{ bottom: { width: '2px', style: 'solid' } }} padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }}>
+                  <i-label caption="Image setting" font={{ bold: true }}></i-label>
+                </i-hstack>
+
+                <i-hstack width={'100%'} justifyContent="space-between" padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }} border={{ bottom: { width: '1px', style: 'solid' } }}>
+                  <i-label caption="Background" stack={{ basis: '30%' }} />
+                  <i-panel id={"backgroundUploaderWrapper"} stack={{ basis: '70%' }} width={'100%'} />
+                </i-hstack>
+
+                <i-hstack width={'100%'} justifyContent="space-between" padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }} border={{ bottom: { width: '1px', style: 'solid' } }}>
+                  <i-label caption="Goods image" stack={{ basis: '30%' }} />
+                  <i-panel id={"goodsImgUploaderWrapper"} stack={{ basis: '70%' }} width={'100%'} />
+                </i-hstack>
+
+              </i-vstack>
+
+              <i-vstack id='configPageControl' width='100%' margin={{ bottom: '1rem' }}>
+                <i-hstack width='100%' horizontalAlignment="center" verticalAlignment="end" margin={{ top: '1rem', bottom: '1rem' }}>
+                  <i-label id="currentPageLabel"></i-label>
+                </i-hstack>
+
+                <i-hstack width='100%' justifyContent="start" horizontalAlignment="start" verticalAlignment="center" gap={7} padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }}>
+                  <i-button id="configDeleteBtn" icon={{ name: 'times-circle' }} width={50} height={30} onClick={this.removePage} background={{ color: 'white' }} />
+                  <i-button id="configAddBtn" icon={{ name: 'plus' }} width={50} height={30} onClick={this.addPage} background={{ color: 'white' }} />
+                </i-hstack>
+
+                <i-hstack width='100%' justifyContent="space-between" horizontalAlignment="center" verticalAlignment="center" gap={7} margin={{ bottom: '1rem' }} padding={{ right: '1rem', left: '1rem' }}>
+                  <i-button id="configLeftBtn" icon={{ name: 'arrow-left' }} width={50} height={30} onClick={this.navToPrevPage} background={{ color: 'white' }} />
+                  <i-label id="currentPageLabel"></i-label>
+                  <i-button id="configRightBtn" icon={{ name: 'arrow-right' }} width={50} height={30} onClick={this.navToNextPage} background={{ color: 'white' }} />
+                </i-hstack>
+
+              </i-vstack>
+
+
+            </i-vstack>
+
+
+
+            {/* <i-hstack width='100%' horizontalAlignment="center" padding={{ left: '1rem', top: '1rem', right: '1rem', bottom: '1rem' }}>
 
               <i-vstack gap={5} margin={{ top: 20, bottom: 20 }} width={'40%'}>
                 <i-input id='titleInput' inputType="textarea" placeholder="Input the title here" width={'100%'} height={100} onChanged={this.setTitle}></i-input>
@@ -603,7 +660,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
               <i-button id="configAddBtn" icon={{ name: 'plus' }} width={100} height={50} onClick={this.addPage} />
               <i-button id="configDeleteBtn" icon={{ name: 'times-circle' }} width={100} height={50} onClick={this.removePage} />
               <i-button id="configRightBtn" icon={{ name: 'arrow-right' }} width={100} height={50} onClick={this.navToNextPage} />
-            </i-hstack>
+            </i-hstack> */}
 
           </i-panel>
 
