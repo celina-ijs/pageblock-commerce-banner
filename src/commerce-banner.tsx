@@ -65,7 +65,9 @@ interface BannerPage {
   goodsImg?: any,
   title?: String,
   content?: String,
-  price?: number
+  price?: number,
+  backgroundUploader?: Upload,
+  goodsUploader?: Upload
 }
 
 @customModule
@@ -94,9 +96,6 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
   private backgroundUploaderWrapper: Panel;
   private goodsImgUploaderWrapper: Panel;
-
-  private backgroundUploaderList: Upload[] = [{} as Upload];
-  private goodsImgUploaderList: Upload[] = [{} as Upload];
 
   private tempBackgroud: any;
   private tempGoodsImg: any;
@@ -144,6 +143,8 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
     this.bannerPageList = this.shallowCopyList(this.data)
 
+    // this.consoleLog();
+    
     this.renderConfigPnl();
     this.configPage.visible = true;
     this.bannerPage.visible = false;
@@ -158,6 +159,8 @@ export class CommerceBannerBlock extends Module implements PageBlock {
         title: targetList[i].title,
         content: targetList[i].content,
         price: targetList[i].price,
+        backgroundUploader: targetList[i].backgroundUploader,
+        goodsUploader: targetList[i].goodsUploader
       })
 
       newList[i].background = (targetList[i].hasOwnProperty('background')) ? targetList[i].background : ""
@@ -165,6 +168,20 @@ export class CommerceBannerBlock extends Module implements PageBlock {
       newList[i].title = (targetList[i].hasOwnProperty('title')) ? targetList[i].title : ""
       newList[i].content = (targetList[i].hasOwnProperty('content')) ? targetList[i].content : ""
       newList[i].price = (targetList[i].hasOwnProperty('price')) ? targetList[i].price : 0;
+      newList[i].backgroundUploader = (targetList[i].hasOwnProperty('backgroundUploader')) ? targetList[i].backgroundUploader : 
+        <i-upload
+          width={'100%'}
+          height={'280px'}
+          border={{ width: 1, style: 'dashed' }}
+          onChanged={this.handleBackgroundUploaderOnChange}
+        ></i-upload>;
+      newList[i].goodsUploader = (targetList[i].hasOwnProperty('goodsUploader')) ? targetList[i].goodsUploader : 
+        <i-upload
+          width={'100%'}
+          height={'280px'}
+          border={{ width: 1, style: 'dashed' }}
+          onChanged={this.handleImgUploaderOnChange}
+        ></i-upload>;
     }
     return newList;
   }
@@ -278,7 +295,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
   preConfig() {
     this.currentPageLabel.caption = `Current page is 1 / 1`;
-    this.backgroundUploaderList[0] =
+    this.bannerPageList[0].backgroundUploader =
       <i-upload
         width={'100%'}
         height={'280px'}
@@ -286,7 +303,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
         onChanged={this.handleBackgroundUploaderOnChange}
       ></i-upload>
 
-    this.goodsImgUploaderList[0] =
+    this.bannerPageList[0].goodsUploader =
       <i-upload
         width={'100%'}
         height={'280px'}
@@ -399,29 +416,23 @@ export class CommerceBannerBlock extends Module implements PageBlock {
       {} as BannerPage
     )
 
-    if (this.backgroundUploaderList.length <= this.currentPage) {
-      this.backgroundUploaderList.push(
-        <i-upload
-          width={'100%'}
-          height={'280px'}
-          caption={"Upload background image here"}
-          border={{ width: 1, style: 'dashed' }}
-          onChanged={this.handleBackgroundUploaderOnChange}
-        ></i-upload>
-      )
-    }
+    this.bannerPageList[this.bannerPageList.length-1].backgroundUploader = 
+      <i-upload
+        width={'100%'}
+        height={'280px'}
+        border={{ width: 1, style: 'dashed' }}
+        visible={false}
+        onChanged={this.handleBackgroundUploaderOnChange}
+      ></i-upload>
 
-    if (this.goodsImgUploaderList.length <= this.currentPage) {
-      this.goodsImgUploaderList.push(
-        <i-upload
-          width={'100%'}
-          height={'280px'}
-          caption={"Upload goods image here"}
-          border={{ width: 1, style: 'dashed' }}
-          onChanged={this.handleImgUploaderOnChange}
-        ></i-upload>
-      )
-    }
+    this.bannerPageList[this.bannerPageList.length-1].goodsUploader = 
+      <i-upload
+        width={'100%'}
+        height={'280px'}
+        border={{ width: 1, style: 'dashed' }}
+        visible={false}
+        onChanged={this.handleImgUploaderOnChange}
+      ></i-upload>
 
     this.renderConfigPnl();
   }
@@ -437,13 +448,6 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
       let tempItem = this.bannerPageList[deletePage]
       this.bannerPageList = this.bannerPageList.filter(item => item != tempItem)
-
-      tempItem = this.backgroundUploaderList[deletePage]
-      this.backgroundUploaderList = this.backgroundUploaderList.filter(item => item != tempItem)
-
-      tempItem = this.goodsImgUploaderList[deletePage]
-      this.goodsImgUploaderList = this.goodsImgUploaderList.filter(item => item != tempItem)
-
     }
     this.renderConfigPnl()
   }
@@ -459,38 +463,40 @@ export class CommerceBannerBlock extends Module implements PageBlock {
     this.contentInput.value = this.bannerPageList[this.currentPage].content;
     this.priceInput.value = this.bannerPageList[this.currentPage].price;
 
-    if (this.backgroundUploaderList.length <= this.currentPage) {
-      this.backgroundUploaderList.push(
-        <i-upload
-          width={'100%'}
-          height={'280px'}
-          border={{ width: 1, style: 'dashed' }}
-          onChanged={this.handleBackgroundUploaderOnChange}
-        ></i-upload>
-      )
-    }
+    // if (this.backgroundUploaderList.length <= this.currentPage) {
+    //   this.backgroundUploaderList.push(
+    //     <i-upload
+    //       width={'100%'}
+    //       height={'280px'}
+    //       border={{ width: 1, style: 'dashed' }}
+    //       onChanged={this.handleBackgroundUploaderOnChange}
+    //     ></i-upload>
+    //   )
+    // }
 
     this.backgroundUploaderWrapper.innerHTML = "";
     this.backgroundUploaderWrapper.append(
-      this.backgroundUploaderList[this.currentPage]
+      this.bannerPageList[this.currentPage].backgroundUploader!
     )
+    this.bannerPageList[this.currentPage].backgroundUploader!.visible = true;
 
 
-    if (this.goodsImgUploaderList.length <= this.currentPage) {
-      this.goodsImgUploaderList.push(
-        <i-upload
-          width={'100%'}
-          height={'280px'}
-          border={{ width: 1, style: 'dashed' }}
-          onChanged={this.handleImgUploaderOnChange}
-        ></i-upload>
-      )
-    }
+    // if (this.goodsImgUploaderList.length <= this.currentPage) {
+    //   this.goodsImgUploaderList.push(
+    //     <i-upload
+    //       width={'100%'}
+    //       height={'280px'}
+    //       border={{ width: 1, style: 'dashed' }}
+    //       onChanged={this.handleImgUploaderOnChange}
+    //     ></i-upload>
+    //   )
+    // }
 
     this.goodsImgUploaderWrapper.innerHTML = "";
     this.goodsImgUploaderWrapper.append(
-      this.goodsImgUploaderList[this.currentPage]
+      this.bannerPageList[this.currentPage].goodsUploader!
     )
+    this.bannerPageList[this.currentPage].goodsUploader!.visible = true;
   }
 
   setTitle() {

@@ -88,8 +88,6 @@
       super(...arguments);
       this.data = [{}];
       this.confirmData = [];
-      this.backgroundUploaderList = [{}];
-      this.goodsImgUploaderList = [{}];
       this.bannerPageList = [{}];
       this.currentPage = 0;
       this.tag = {};
@@ -131,13 +129,27 @@
           goodsImg: targetList[i].goodsImg,
           title: targetList[i].title,
           content: targetList[i].content,
-          price: targetList[i].price
+          price: targetList[i].price,
+          backgroundUploader: targetList[i].backgroundUploader,
+          goodsUploader: targetList[i].goodsUploader
         });
         newList[i].background = targetList[i].hasOwnProperty("background") ? targetList[i].background : "";
         newList[i].goodsImg = targetList[i].hasOwnProperty("goodsImg") ? targetList[i].goodsImg : "";
         newList[i].title = targetList[i].hasOwnProperty("title") ? targetList[i].title : "";
         newList[i].content = targetList[i].hasOwnProperty("content") ? targetList[i].content : "";
         newList[i].price = targetList[i].hasOwnProperty("price") ? targetList[i].price : 0;
+        newList[i].backgroundUploader = targetList[i].hasOwnProperty("backgroundUploader") ? targetList[i].backgroundUploader : /* @__PURE__ */ this.$render("i-upload", {
+          width: "100%",
+          height: "280px",
+          border: { width: 1, style: "dashed" },
+          onChanged: this.handleBackgroundUploaderOnChange
+        });
+        newList[i].goodsUploader = targetList[i].hasOwnProperty("goodsUploader") ? targetList[i].goodsUploader : /* @__PURE__ */ this.$render("i-upload", {
+          width: "100%",
+          height: "280px",
+          border: { width: 1, style: "dashed" },
+          onChanged: this.handleImgUploaderOnChange
+        });
       }
       return newList;
     }
@@ -217,13 +229,13 @@
     }
     preConfig() {
       this.currentPageLabel.caption = `Current page is 1 / 1`;
-      this.backgroundUploaderList[0] = /* @__PURE__ */ this.$render("i-upload", {
+      this.bannerPageList[0].backgroundUploader = /* @__PURE__ */ this.$render("i-upload", {
         width: "100%",
         height: "280px",
         border: { width: 1, style: "dashed" },
         onChanged: this.handleBackgroundUploaderOnChange
       });
-      this.goodsImgUploaderList[0] = /* @__PURE__ */ this.$render("i-upload", {
+      this.bannerPageList[0].goodsUploader = /* @__PURE__ */ this.$render("i-upload", {
         width: "100%",
         height: "280px",
         border: { width: 1, style: "dashed" },
@@ -365,24 +377,20 @@
     addPage() {
       this.currentPageLabel.caption = `Current page is ${this.currentPage + 1} / ${this.bannerPageList.length + 1}`;
       this.bannerPageList.push({});
-      if (this.backgroundUploaderList.length <= this.currentPage) {
-        this.backgroundUploaderList.push(/* @__PURE__ */ this.$render("i-upload", {
-          width: "100%",
-          height: "280px",
-          caption: "Upload background image here",
-          border: { width: 1, style: "dashed" },
-          onChanged: this.handleBackgroundUploaderOnChange
-        }));
-      }
-      if (this.goodsImgUploaderList.length <= this.currentPage) {
-        this.goodsImgUploaderList.push(/* @__PURE__ */ this.$render("i-upload", {
-          width: "100%",
-          height: "280px",
-          caption: "Upload goods image here",
-          border: { width: 1, style: "dashed" },
-          onChanged: this.handleImgUploaderOnChange
-        }));
-      }
+      this.bannerPageList[this.bannerPageList.length - 1].backgroundUploader = /* @__PURE__ */ this.$render("i-upload", {
+        width: "100%",
+        height: "280px",
+        border: { width: 1, style: "dashed" },
+        visible: false,
+        onChanged: this.handleBackgroundUploaderOnChange
+      });
+      this.bannerPageList[this.bannerPageList.length - 1].goodsUploader = /* @__PURE__ */ this.$render("i-upload", {
+        width: "100%",
+        height: "280px",
+        border: { width: 1, style: "dashed" },
+        visible: false,
+        onChanged: this.handleImgUploaderOnChange
+      });
       this.renderConfigPnl();
     }
     removePage() {
@@ -393,10 +401,6 @@
         }
         let tempItem = this.bannerPageList[deletePage];
         this.bannerPageList = this.bannerPageList.filter((item) => item != tempItem);
-        tempItem = this.backgroundUploaderList[deletePage];
-        this.backgroundUploaderList = this.backgroundUploaderList.filter((item) => item != tempItem);
-        tempItem = this.goodsImgUploaderList[deletePage];
-        this.goodsImgUploaderList = this.goodsImgUploaderList.filter((item) => item != tempItem);
       }
       this.renderConfigPnl();
     }
@@ -408,26 +412,12 @@
       this.titleInput.value = this.bannerPageList[this.currentPage].title;
       this.contentInput.value = this.bannerPageList[this.currentPage].content;
       this.priceInput.value = this.bannerPageList[this.currentPage].price;
-      if (this.backgroundUploaderList.length <= this.currentPage) {
-        this.backgroundUploaderList.push(/* @__PURE__ */ this.$render("i-upload", {
-          width: "100%",
-          height: "280px",
-          border: { width: 1, style: "dashed" },
-          onChanged: this.handleBackgroundUploaderOnChange
-        }));
-      }
       this.backgroundUploaderWrapper.innerHTML = "";
-      this.backgroundUploaderWrapper.append(this.backgroundUploaderList[this.currentPage]);
-      if (this.goodsImgUploaderList.length <= this.currentPage) {
-        this.goodsImgUploaderList.push(/* @__PURE__ */ this.$render("i-upload", {
-          width: "100%",
-          height: "280px",
-          border: { width: 1, style: "dashed" },
-          onChanged: this.handleImgUploaderOnChange
-        }));
-      }
+      this.backgroundUploaderWrapper.append(this.bannerPageList[this.currentPage].backgroundUploader);
+      this.bannerPageList[this.currentPage].backgroundUploader.visible = true;
       this.goodsImgUploaderWrapper.innerHTML = "";
-      this.goodsImgUploaderWrapper.append(this.goodsImgUploaderList[this.currentPage]);
+      this.goodsImgUploaderWrapper.append(this.bannerPageList[this.currentPage].goodsUploader);
+      this.bannerPageList[this.currentPage].goodsUploader.visible = true;
     }
     setTitle() {
       this.bannerPageList[this.currentPage].title = this.titleInput.value;
