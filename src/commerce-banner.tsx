@@ -66,8 +66,6 @@ interface BannerPage {
   title?: String,
   content?: String,
   price?: number,
-  backgroundUploader?: Upload,
-  goodsUploader?: Upload
 }
 
 @customModule
@@ -92,10 +90,12 @@ export class CommerceBannerBlock extends Module implements PageBlock {
   private configAddBtn: Button;
   private configDeleteBtn: Button;
   private configRightBtn: Button;
-
+  private mainPnl: Panel;
 
   private backgroundUploaderWrapper: Panel;
   private goodsImgUploaderWrapper: Panel;
+  private backgroundImgUploader: Upload;
+  private goodsImgUploader: Upload;
 
   private tempBackgroud: any;
   private tempGoodsImg: any;
@@ -113,7 +113,6 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
   async init() {
     super.init();
-    this.preConfig();
     this.currentPage = 0;
   }
 
@@ -143,14 +142,13 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
     this.bannerPageList = this.shallowCopyList(this.data)
 
-    // this.consoleLog();
-    
     this.renderConfigPnl();
     this.configPage.visible = true;
     this.bannerPage.visible = false;
   }
 
   shallowCopyList(targetList: BannerPage[]) {
+
     let newList = [] as BannerPage[];
     for (let i = 0; i < targetList.length; i++) {
       newList.push({
@@ -159,8 +157,6 @@ export class CommerceBannerBlock extends Module implements PageBlock {
         title: targetList[i].title,
         content: targetList[i].content,
         price: targetList[i].price,
-        backgroundUploader: targetList[i].backgroundUploader,
-        goodsUploader: targetList[i].goodsUploader
       })
 
       newList[i].background = (targetList[i].hasOwnProperty('background')) ? targetList[i].background : ""
@@ -168,32 +164,14 @@ export class CommerceBannerBlock extends Module implements PageBlock {
       newList[i].title = (targetList[i].hasOwnProperty('title')) ? targetList[i].title : ""
       newList[i].content = (targetList[i].hasOwnProperty('content')) ? targetList[i].content : ""
       newList[i].price = (targetList[i].hasOwnProperty('price')) ? targetList[i].price : 0;
-      newList[i].backgroundUploader = (targetList[i].hasOwnProperty('backgroundUploader')) ? targetList[i].backgroundUploader : 
-        <i-upload
-          width={'100%'}
-          height={'280px'}
-          border={{ width: 1, style: 'dashed' }}
-          onChanged={this.handleBackgroundUploaderOnChange}
-        ></i-upload>;
-      newList[i].goodsUploader = (targetList[i].hasOwnProperty('goodsUploader')) ? targetList[i].goodsUploader : 
-        <i-upload
-          width={'100%'}
-          height={'280px'}
-          border={{ width: 1, style: 'dashed' }}
-          onChanged={this.handleImgUploaderOnChange}
-        ></i-upload>;
     }
     return newList;
   }
 
   async confirm() {
 
-    // console.log("confirm")
     this.confirmData = this.shallowCopyList(this.bannerPageList);
-
     await this.setData(this.confirmData);
-
-    // this.consoleLog();
 
     this.renderBanner();
     this.configPage.visible = false;
@@ -202,14 +180,11 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
   async discard() {
 
-    // console.log("discard")
     this.bannerPageList = this.shallowCopyList(this.confirmData)
 
     if (this.currentPage >= this.confirmData.length - 1) {
       this.currentPage = this.confirmData.length - 1;
     }
-
-    // this.consoleLog()
 
     this.renderBanner();
     this.configPage.visible = false;
@@ -235,16 +210,15 @@ export class CommerceBannerBlock extends Module implements PageBlock {
   }
 
   validate(): boolean {
-    console.log("validate")
     return true;
   }
 
   onChangeAlign(source: Control, event: Event) {
-    console.log("align: ", (source as RadioGroup).selectedValue);
+    // console.log("align: ", (source as RadioGroup).selectedValue);
   }
 
   onChangeAuto(source: Control, event: Event) {
-    console.log("auto: ", (source as RadioGroup).selectedValue);
+    // console.log("auto: ", (source as RadioGroup).selectedValue);
   }
 
   async consoleLog() {
@@ -265,11 +239,11 @@ export class CommerceBannerBlock extends Module implements PageBlock {
       });
 
       this.tempBackgroud = await toBase64(files[0])
-      this.setBackgroundImg();
+      this.updateBackground()
     }
   }
 
-  setBackgroundImg() {
+  updateBackground() {
     this.bannerPageList[this.currentPage].background = this.tempBackgroud;
   }
 
@@ -285,31 +259,12 @@ export class CommerceBannerBlock extends Module implements PageBlock {
       });
 
       this.tempGoodsImg = await toBase64(files[0])
-      this.setGoodsImg();
+      this.updateGoodsImg()
     }
   }
 
-  setGoodsImg() {
+  updateGoodsImg() {
     this.bannerPageList[this.currentPage].goodsImg = this.tempGoodsImg;
-  }
-
-  preConfig() {
-    this.currentPageLabel.caption = `Current page is 1 / 1`;
-    this.bannerPageList[0].backgroundUploader =
-      <i-upload
-        width={'100%'}
-        height={'280px'}
-        border={{ width: 1, style: 'dashed' }}
-        onChanged={this.handleBackgroundUploaderOnChange}
-      ></i-upload>
-
-    this.bannerPageList[0].goodsUploader =
-      <i-upload
-        width={'100%'}
-        height={'280px'}
-        border={{ width: 1, style: 'dashed' }}
-        onChanged={this.handleImgUploaderOnChange}
-      ></i-upload>
   }
 
   renderBanner() {
@@ -416,24 +371,6 @@ export class CommerceBannerBlock extends Module implements PageBlock {
       {} as BannerPage
     )
 
-    this.bannerPageList[this.bannerPageList.length-1].backgroundUploader = 
-      <i-upload
-        width={'100%'}
-        height={'280px'}
-        border={{ width: 1, style: 'dashed' }}
-        visible={false}
-        onChanged={this.handleBackgroundUploaderOnChange}
-      ></i-upload>
-
-    this.bannerPageList[this.bannerPageList.length-1].goodsUploader = 
-      <i-upload
-        width={'100%'}
-        height={'280px'}
-        border={{ width: 1, style: 'dashed' }}
-        visible={false}
-        onChanged={this.handleImgUploaderOnChange}
-      ></i-upload>
-
     this.renderConfigPnl();
   }
 
@@ -452,51 +389,117 @@ export class CommerceBannerBlock extends Module implements PageBlock {
     this.renderConfigPnl()
   }
 
+
+
   renderConfigPnl() {
+    try {
 
-    this.configLeftBtn.opacity = (this.currentPage == 0) ? 0.5 : 1;
-    this.configRightBtn.opacity = (this.currentPage == this.bannerPageList.length - 1) ? 0.5 : 1;
-    this.configDeleteBtn.opacity = (this.bannerPageList.length == 1) ? 0.5 : 1;
+      this.configLeftBtn.opacity = (this.currentPage == 0) ? 0.5 : 1;
+      this.configRightBtn.opacity = (this.currentPage == this.bannerPageList.length - 1) ? 0.5 : 1;
+      this.configDeleteBtn.opacity = (this.bannerPageList.length == 1) ? 0.5 : 1;
 
-    this.currentPageLabel.caption = `Current page is ${this.currentPage + 1} / ${this.bannerPageList.length}`;
-    this.titleInput.value = this.bannerPageList[this.currentPage].title;
-    this.contentInput.value = this.bannerPageList[this.currentPage].content;
-    this.priceInput.value = this.bannerPageList[this.currentPage].price;
+      this.currentPageLabel.caption = `Current page is ${this.currentPage + 1} / ${this.bannerPageList.length}`;
+      this.titleInput.value = this.bannerPageList[this.currentPage].title;
+      this.contentInput.value = this.bannerPageList[this.currentPage].content;
+      this.priceInput.value = this.bannerPageList[this.currentPage].price;
 
-    // if (this.backgroundUploaderList.length <= this.currentPage) {
-    //   this.backgroundUploaderList.push(
-    //     <i-upload
-    //       width={'100%'}
-    //       height={'280px'}
-    //       border={{ width: 1, style: 'dashed' }}
-    //       onChanged={this.handleBackgroundUploaderOnChange}
-    //     ></i-upload>
-    //   )
-    // }
+      this.backgroundUploaderWrapper.innerHTML = ""
+      this.backgroundUploaderWrapper.append(
+        <i-upload
+          id={"backgroundImgUploader"}
+          width={'100%'}
+          minHeight={'280px'}
+          border={{ width: 1, style: 'dashed' }}
+          draggable={true}
+          onChanged={this.handleBackgroundUploaderOnChange}
+        ></i-upload>
+      )
 
-    this.backgroundUploaderWrapper.innerHTML = "";
-    this.backgroundUploaderWrapper.append(
-      this.bannerPageList[this.currentPage].backgroundUploader!
-    )
-    this.bannerPageList[this.currentPage].backgroundUploader!.visible = true;
+      if (this.bannerPageList[this.currentPage].background != "" && this.bannerPageList[this.currentPage].background != undefined) {
 
+        let removeImgDiv = this.backgroundImgUploader.firstChild!.childNodes[2].childNodes[1] as HTMLElement
 
-    // if (this.goodsImgUploaderList.length <= this.currentPage) {
-    //   this.goodsImgUploaderList.push(
-    //     <i-upload
-    //       width={'100%'}
-    //       height={'280px'}
-    //       border={{ width: 1, style: 'dashed' }}
-    //       onChanged={this.handleImgUploaderOnChange}
-    //     ></i-upload>
-    //   )
-    // }
+        removeImgDiv.classList.add("removeImg")
+        removeImgDiv.style.opacity = '0'
 
-    this.goodsImgUploaderWrapper.innerHTML = "";
-    this.goodsImgUploaderWrapper.append(
-      this.bannerPageList[this.currentPage].goodsUploader!
-    )
-    this.bannerPageList[this.currentPage].goodsUploader!.visible = true;
+        removeImgDiv.onmouseover = function () {
+          removeImgDiv.style.opacity = '1'
+        }
+        removeImgDiv.onmouseleave = function () {
+          removeImgDiv.style.opacity = '0'
+        }
+
+        removeImgDiv.addEventListener('click', (event) => {
+          this.backgroundUploaderWrapper.innerHTML = ""
+          this.backgroundUploaderWrapper.append(
+            <i-upload
+              id={"backgroundImgUploader"}
+              width={'100%'}
+              minHeight={'280px'}
+              border={{ width: 1, style: 'dashed' }}
+              draggable={true}
+              onChanged={this.handleBackgroundUploaderOnChange}
+            ></i-upload>
+          )
+          this.bannerPageList[this.currentPage].background = ""
+        })
+
+        this.backgroundImgUploader.innerHTML = ""
+        this.backgroundImgUploader.append(removeImgDiv)
+        this.backgroundImgUploader.append(<i-image margin={{ top: '1px', right: '1px', bottom: '1px', left: '1px' }} url={this.bannerPageList[this.currentPage].background}></i-image>)
+
+      }
+
+      this.goodsImgUploaderWrapper.innerHTML = ""
+      this.goodsImgUploaderWrapper.append(
+        <i-upload
+          id={"goodsImgUploader"}
+          width={'100%'}
+          minHeight={'280px'}
+          border={{ width: 1, style: 'dashed' }}
+          draggable={true}
+          onChanged={this.handleImgUploaderOnChange}
+        ></i-upload>
+      )
+
+      if (this.bannerPageList[this.currentPage].goodsImg != "" && this.bannerPageList[this.currentPage].goodsImg != undefined) {
+
+        let removeImgDiv = this.goodsImgUploader.firstChild!.childNodes[2].childNodes[1] as HTMLElement
+
+        removeImgDiv.classList.add("removeImg")
+        removeImgDiv.style.opacity = '0'
+
+        removeImgDiv.onmouseover = function () {
+          removeImgDiv.style.opacity = '1'
+        }
+        removeImgDiv.onmouseleave = function () {
+          removeImgDiv.style.opacity = '0'
+        }
+
+        removeImgDiv.addEventListener('click', (event) => {
+          this.goodsImgUploaderWrapper.innerHTML = ""
+          this.goodsImgUploaderWrapper.append(
+            <i-upload
+              id={"goodsImgUploader"}
+              width={'100%'}
+              minHeight={'280px'}
+              border={{ width: 1, style: 'dashed' }}
+              draggable={true}
+              onChanged={this.handleImgUploaderOnChange}
+            ></i-upload>
+          )
+          this.bannerPageList[this.currentPage].goodsImg = ""
+        })
+
+        this.goodsImgUploader.innerHTML = ""
+        this.goodsImgUploader.append(removeImgDiv)
+        this.goodsImgUploader.append(<i-image margin={{ top: '1px', right: '1px', bottom: '1px', left: '1px' }} url={this.bannerPageList[this.currentPage].goodsImg}></i-image>)
+
+      }
+
+    } catch (e) {
+      console.log("renderConfigPnl(): ", e)
+    }
   }
 
   setTitle() {
@@ -513,7 +516,7 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
   render() {
     return (
-      <i-panel>
+      <i-panel id="mainPnl">
         <i-modal
           id={"mdConfig"}
           showBackdrop={true}
@@ -609,20 +612,38 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
                 <i-hstack width={'100%'} justifyContent="space-between" padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }} border={{ bottom: { width: '1px', style: 'solid' } }}>
                   <i-label caption="Background" stack={{ basis: '30%' }} />
-                  <i-panel id={"backgroundUploaderWrapper"} stack={{ basis: '70%' }} width={'100%'} />
+                  <i-panel id={"backgroundUploaderWrapper"} stack={{ basis: '70%' }} width={'100%'}>
+                    <i-upload
+                      id={"backgroundImgUploader"}
+                      width={'100%'}
+                      minHeight={'280px'}
+                      border={{ width: 1, style: 'dashed' }}
+                      draggable={true}
+                      onChanged={this.handleBackgroundUploaderOnChange}
+                    ></i-upload>
+                  </i-panel>
                 </i-hstack>
 
                 <i-hstack width={'100%'} justifyContent="space-between" padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }} border={{ bottom: { width: '1px', style: 'solid' } }}>
                   <i-label caption="Goods image" stack={{ basis: '30%' }} />
-                  <i-panel id={"goodsImgUploaderWrapper"} stack={{ basis: '70%' }} width={'100%'} />
+                  <i-panel id={"goodsImgUploaderWrapper"} stack={{ basis: '70%' }} width={'100%'}>
+                    <i-upload
+                      id={"goodsImgUploader"}
+                      width={'100%'}
+                      minHeight={'280px'}
+                      border={{ width: 1, style: 'dashed' }}
+                      draggable={true}
+                      onChanged={this.handleImgUploaderOnChange}
+                    ></i-upload>
+                  </i-panel>
                 </i-hstack>
 
               </i-vstack>
 
               <i-vstack id='configPageControl' width='100%' margin={{ bottom: '1rem' }}>
-                <i-hstack width='100%' horizontalAlignment="center" verticalAlignment="end" margin={{ top: '1rem', bottom: '1rem' }}>
+                {/* <i-hstack width='100%' horizontalAlignment="center" verticalAlignment="end" margin={{ top: '1rem', bottom: '1rem' }}>
                   <i-label id="currentPageLabel"></i-label>
-                </i-hstack>
+                </i-hstack> */}
 
                 <i-hstack width='100%' justifyContent="start" horizontalAlignment="start" verticalAlignment="center" gap={7} padding={{ top: '1rem', right: '1rem', bottom: '1rem', left: '1rem' }}>
                   <i-button id="configDeleteBtn" icon={{ name: 'times-circle' }} width={50} height={30} onClick={this.removePage} background={{ color: 'white' }} />
@@ -631,42 +652,13 @@ export class CommerceBannerBlock extends Module implements PageBlock {
 
                 <i-hstack width='100%' justifyContent="space-between" horizontalAlignment="center" verticalAlignment="center" gap={7} margin={{ bottom: '1rem' }} padding={{ right: '1rem', left: '1rem' }}>
                   <i-button id="configLeftBtn" icon={{ name: 'arrow-left' }} width={50} height={30} onClick={this.navToPrevPage} background={{ color: 'white' }} />
-                  <i-label id="currentPageLabel"></i-label>
+                  <i-label id="currentPageLabel" caption="Current page is 1 / 1"></i-label>
                   <i-button id="configRightBtn" icon={{ name: 'arrow-right' }} width={50} height={30} onClick={this.navToNextPage} background={{ color: 'white' }} />
                 </i-hstack>
 
               </i-vstack>
 
-
             </i-vstack>
-
-
-
-            {/* <i-hstack width='100%' horizontalAlignment="center" padding={{ left: '1rem', top: '1rem', right: '1rem', bottom: '1rem' }}>
-
-              <i-vstack gap={5} margin={{ top: 20, bottom: 20 }} width={'40%'}>
-                <i-input id='titleInput' inputType="textarea" placeholder="Input the title here" width={'100%'} height={100} onChanged={this.setTitle}></i-input>
-                <i-input id='contentInput' inputType="textarea" placeholder="Input the content here" width={'100%'} height={300} onChanged={this.setContent}></i-input>
-                <i-input id='priceInput' inputType="textarea" placeholder="Input the price here" width={'100%'} onChanged={this.setPrice}></i-input>
-              </i-vstack>
-
-              <i-hstack gap={5} verticalAlignment="center" padding={{ left: '1rem' }}>
-                <i-panel id={"backgroundUploaderWrapper"} />
-                <i-panel id={"goodsImgUploaderWrapper"} />
-              </i-hstack>
-
-            </i-hstack>
-
-            <i-hstack width='100%' horizontalAlignment="center" verticalAlignment="end" margin={{ top: '1rem', bottom: '1rem' }}>
-              <i-label id="currentPageLabel"></i-label>
-            </i-hstack>
-
-            <i-hstack width='100%' horizontalAlignment="center" verticalAlignment="end" gap={7} margin={{ bottom: '1rem' }}>
-              <i-button id="configLeftBtn" icon={{ name: 'arrow-left' }} width={100} height={50} onClick={this.navToPrevPage} />
-              <i-button id="configAddBtn" icon={{ name: 'plus' }} width={100} height={50} onClick={this.addPage} />
-              <i-button id="configDeleteBtn" icon={{ name: 'times-circle' }} width={100} height={50} onClick={this.removePage} />
-              <i-button id="configRightBtn" icon={{ name: 'arrow-right' }} width={100} height={50} onClick={this.navToNextPage} />
-            </i-hstack> */}
 
           </i-panel>
 

@@ -40,10 +40,14 @@
   // src/commerce-banner.css.ts
   var import_components = __toModule(__require("@ijstech/components"));
   var Theme = import_components.Styles.Theme.ThemeVars;
-  import_components.Styles.cssRule("#bannerPage", {
+  import_components.Styles.cssRule("#mainPnl", {
     $nest: {
       ".changePageBtn:hover": {
         backgroundColor: "black"
+      },
+      ".removeImg": {
+        visibility: "visible",
+        zIndex: 10
       }
     }
   });
@@ -95,7 +99,6 @@
     }
     async init() {
       super.init();
-      this.preConfig();
       this.currentPage = 0;
     }
     async getData() {
@@ -129,27 +132,13 @@
           goodsImg: targetList[i].goodsImg,
           title: targetList[i].title,
           content: targetList[i].content,
-          price: targetList[i].price,
-          backgroundUploader: targetList[i].backgroundUploader,
-          goodsUploader: targetList[i].goodsUploader
+          price: targetList[i].price
         });
         newList[i].background = targetList[i].hasOwnProperty("background") ? targetList[i].background : "";
         newList[i].goodsImg = targetList[i].hasOwnProperty("goodsImg") ? targetList[i].goodsImg : "";
         newList[i].title = targetList[i].hasOwnProperty("title") ? targetList[i].title : "";
         newList[i].content = targetList[i].hasOwnProperty("content") ? targetList[i].content : "";
         newList[i].price = targetList[i].hasOwnProperty("price") ? targetList[i].price : 0;
-        newList[i].backgroundUploader = targetList[i].hasOwnProperty("backgroundUploader") ? targetList[i].backgroundUploader : /* @__PURE__ */ this.$render("i-upload", {
-          width: "100%",
-          height: "280px",
-          border: { width: 1, style: "dashed" },
-          onChanged: this.handleBackgroundUploaderOnChange
-        });
-        newList[i].goodsUploader = targetList[i].hasOwnProperty("goodsUploader") ? targetList[i].goodsUploader : /* @__PURE__ */ this.$render("i-upload", {
-          width: "100%",
-          height: "280px",
-          border: { width: 1, style: "dashed" },
-          onChanged: this.handleImgUploaderOnChange
-        });
       }
       return newList;
     }
@@ -183,14 +172,11 @@
       this.mdConfig.visible = false;
     }
     validate() {
-      console.log("validate");
       return true;
     }
     onChangeAlign(source, event) {
-      console.log("align: ", source.selectedValue);
     }
     onChangeAuto(source, event) {
-      console.log("auto: ", source.selectedValue);
     }
     async consoleLog() {
       console.log("bannerList: ", this.bannerPageList);
@@ -206,10 +192,10 @@
           reader.onerror = (error) => reject(error);
         });
         this.tempBackgroud = await toBase64(files[0]);
-        this.setBackgroundImg();
+        this.updateBackground();
       }
     }
-    setBackgroundImg() {
+    updateBackground() {
       this.bannerPageList[this.currentPage].background = this.tempBackgroud;
     }
     async handleImgUploaderOnChange(control, files) {
@@ -221,26 +207,11 @@
           reader.onerror = (error) => reject(error);
         });
         this.tempGoodsImg = await toBase64(files[0]);
-        this.setGoodsImg();
+        this.updateGoodsImg();
       }
     }
-    setGoodsImg() {
+    updateGoodsImg() {
       this.bannerPageList[this.currentPage].goodsImg = this.tempGoodsImg;
-    }
-    preConfig() {
-      this.currentPageLabel.caption = `Current page is 1 / 1`;
-      this.bannerPageList[0].backgroundUploader = /* @__PURE__ */ this.$render("i-upload", {
-        width: "100%",
-        height: "280px",
-        border: { width: 1, style: "dashed" },
-        onChanged: this.handleBackgroundUploaderOnChange
-      });
-      this.bannerPageList[0].goodsUploader = /* @__PURE__ */ this.$render("i-upload", {
-        width: "100%",
-        height: "280px",
-        border: { width: 1, style: "dashed" },
-        onChanged: this.handleImgUploaderOnChange
-      });
     }
     renderBanner() {
       this.bannerPage.innerHTML = "";
@@ -377,20 +348,6 @@
     addPage() {
       this.currentPageLabel.caption = `Current page is ${this.currentPage + 1} / ${this.bannerPageList.length + 1}`;
       this.bannerPageList.push({});
-      this.bannerPageList[this.bannerPageList.length - 1].backgroundUploader = /* @__PURE__ */ this.$render("i-upload", {
-        width: "100%",
-        height: "280px",
-        border: { width: 1, style: "dashed" },
-        visible: false,
-        onChanged: this.handleBackgroundUploaderOnChange
-      });
-      this.bannerPageList[this.bannerPageList.length - 1].goodsUploader = /* @__PURE__ */ this.$render("i-upload", {
-        width: "100%",
-        height: "280px",
-        border: { width: 1, style: "dashed" },
-        visible: false,
-        onChanged: this.handleImgUploaderOnChange
-      });
       this.renderConfigPnl();
     }
     removePage() {
@@ -405,19 +362,93 @@
       this.renderConfigPnl();
     }
     renderConfigPnl() {
-      this.configLeftBtn.opacity = this.currentPage == 0 ? 0.5 : 1;
-      this.configRightBtn.opacity = this.currentPage == this.bannerPageList.length - 1 ? 0.5 : 1;
-      this.configDeleteBtn.opacity = this.bannerPageList.length == 1 ? 0.5 : 1;
-      this.currentPageLabel.caption = `Current page is ${this.currentPage + 1} / ${this.bannerPageList.length}`;
-      this.titleInput.value = this.bannerPageList[this.currentPage].title;
-      this.contentInput.value = this.bannerPageList[this.currentPage].content;
-      this.priceInput.value = this.bannerPageList[this.currentPage].price;
-      this.backgroundUploaderWrapper.innerHTML = "";
-      this.backgroundUploaderWrapper.append(this.bannerPageList[this.currentPage].backgroundUploader);
-      this.bannerPageList[this.currentPage].backgroundUploader.visible = true;
-      this.goodsImgUploaderWrapper.innerHTML = "";
-      this.goodsImgUploaderWrapper.append(this.bannerPageList[this.currentPage].goodsUploader);
-      this.bannerPageList[this.currentPage].goodsUploader.visible = true;
+      try {
+        this.configLeftBtn.opacity = this.currentPage == 0 ? 0.5 : 1;
+        this.configRightBtn.opacity = this.currentPage == this.bannerPageList.length - 1 ? 0.5 : 1;
+        this.configDeleteBtn.opacity = this.bannerPageList.length == 1 ? 0.5 : 1;
+        this.currentPageLabel.caption = `Current page is ${this.currentPage + 1} / ${this.bannerPageList.length}`;
+        this.titleInput.value = this.bannerPageList[this.currentPage].title;
+        this.contentInput.value = this.bannerPageList[this.currentPage].content;
+        this.priceInput.value = this.bannerPageList[this.currentPage].price;
+        this.backgroundUploaderWrapper.innerHTML = "";
+        this.backgroundUploaderWrapper.append(/* @__PURE__ */ this.$render("i-upload", {
+          id: "backgroundImgUploader",
+          width: "100%",
+          minHeight: "280px",
+          border: { width: 1, style: "dashed" },
+          draggable: true,
+          onChanged: this.handleBackgroundUploaderOnChange
+        }));
+        if (this.bannerPageList[this.currentPage].background != "" && this.bannerPageList[this.currentPage].background != void 0) {
+          let removeImgDiv = this.backgroundImgUploader.firstChild.childNodes[2].childNodes[1];
+          removeImgDiv.classList.add("removeImg");
+          removeImgDiv.style.opacity = "0";
+          removeImgDiv.onmouseover = function() {
+            removeImgDiv.style.opacity = "1";
+          };
+          removeImgDiv.onmouseleave = function() {
+            removeImgDiv.style.opacity = "0";
+          };
+          removeImgDiv.addEventListener("click", (event) => {
+            this.backgroundUploaderWrapper.innerHTML = "";
+            this.backgroundUploaderWrapper.append(/* @__PURE__ */ this.$render("i-upload", {
+              id: "backgroundImgUploader",
+              width: "100%",
+              minHeight: "280px",
+              border: { width: 1, style: "dashed" },
+              draggable: true,
+              onChanged: this.handleBackgroundUploaderOnChange
+            }));
+            this.bannerPageList[this.currentPage].background = "";
+          });
+          this.backgroundImgUploader.innerHTML = "";
+          this.backgroundImgUploader.append(removeImgDiv);
+          this.backgroundImgUploader.append(/* @__PURE__ */ this.$render("i-image", {
+            margin: { top: "1px", right: "1px", bottom: "1px", left: "1px" },
+            url: this.bannerPageList[this.currentPage].background
+          }));
+        }
+        this.goodsImgUploaderWrapper.innerHTML = "";
+        this.goodsImgUploaderWrapper.append(/* @__PURE__ */ this.$render("i-upload", {
+          id: "goodsImgUploader",
+          width: "100%",
+          minHeight: "280px",
+          border: { width: 1, style: "dashed" },
+          draggable: true,
+          onChanged: this.handleImgUploaderOnChange
+        }));
+        if (this.bannerPageList[this.currentPage].goodsImg != "" && this.bannerPageList[this.currentPage].goodsImg != void 0) {
+          let removeImgDiv = this.goodsImgUploader.firstChild.childNodes[2].childNodes[1];
+          removeImgDiv.classList.add("removeImg");
+          removeImgDiv.style.opacity = "0";
+          removeImgDiv.onmouseover = function() {
+            removeImgDiv.style.opacity = "1";
+          };
+          removeImgDiv.onmouseleave = function() {
+            removeImgDiv.style.opacity = "0";
+          };
+          removeImgDiv.addEventListener("click", (event) => {
+            this.goodsImgUploaderWrapper.innerHTML = "";
+            this.goodsImgUploaderWrapper.append(/* @__PURE__ */ this.$render("i-upload", {
+              id: "goodsImgUploader",
+              width: "100%",
+              minHeight: "280px",
+              border: { width: 1, style: "dashed" },
+              draggable: true,
+              onChanged: this.handleImgUploaderOnChange
+            }));
+            this.bannerPageList[this.currentPage].goodsImg = "";
+          });
+          this.goodsImgUploader.innerHTML = "";
+          this.goodsImgUploader.append(removeImgDiv);
+          this.goodsImgUploader.append(/* @__PURE__ */ this.$render("i-image", {
+            margin: { top: "1px", right: "1px", bottom: "1px", left: "1px" },
+            url: this.bannerPageList[this.currentPage].goodsImg
+          }));
+        }
+      } catch (e) {
+        console.log("renderConfigPnl(): ", e);
+      }
     }
     setTitle() {
       this.bannerPageList[this.currentPage].title = this.titleInput.value;
@@ -429,7 +460,9 @@
       this.bannerPageList[this.currentPage].price = this.priceInput.value;
     }
     render() {
-      return /* @__PURE__ */ this.$render("i-panel", null, /* @__PURE__ */ this.$render("i-modal", {
+      return /* @__PURE__ */ this.$render("i-panel", {
+        id: "mainPnl"
+      }, /* @__PURE__ */ this.$render("i-modal", {
         id: "mdConfig",
         showBackdrop: true,
         background: { color: "#FFF" },
@@ -616,7 +649,14 @@
         id: "backgroundUploaderWrapper",
         stack: { basis: "70%" },
         width: "100%"
-      })), /* @__PURE__ */ this.$render("i-hstack", {
+      }, /* @__PURE__ */ this.$render("i-upload", {
+        id: "backgroundImgUploader",
+        width: "100%",
+        minHeight: "280px",
+        border: { width: 1, style: "dashed" },
+        draggable: true,
+        onChanged: this.handleBackgroundUploaderOnChange
+      }))), /* @__PURE__ */ this.$render("i-hstack", {
         width: "100%",
         justifyContent: "space-between",
         padding: { top: "1rem", right: "1rem", bottom: "1rem", left: "1rem" },
@@ -628,18 +668,18 @@
         id: "goodsImgUploaderWrapper",
         stack: { basis: "70%" },
         width: "100%"
-      }))), /* @__PURE__ */ this.$render("i-vstack", {
+      }, /* @__PURE__ */ this.$render("i-upload", {
+        id: "goodsImgUploader",
+        width: "100%",
+        minHeight: "280px",
+        border: { width: 1, style: "dashed" },
+        draggable: true,
+        onChanged: this.handleImgUploaderOnChange
+      })))), /* @__PURE__ */ this.$render("i-vstack", {
         id: "configPageControl",
         width: "100%",
         margin: { bottom: "1rem" }
       }, /* @__PURE__ */ this.$render("i-hstack", {
-        width: "100%",
-        horizontalAlignment: "center",
-        verticalAlignment: "end",
-        margin: { top: "1rem", bottom: "1rem" }
-      }, /* @__PURE__ */ this.$render("i-label", {
-        id: "currentPageLabel"
-      })), /* @__PURE__ */ this.$render("i-hstack", {
         width: "100%",
         justifyContent: "start",
         horizontalAlignment: "start",
@@ -676,7 +716,8 @@
         onClick: this.navToPrevPage,
         background: { color: "white" }
       }), /* @__PURE__ */ this.$render("i-label", {
-        id: "currentPageLabel"
+        id: "currentPageLabel",
+        caption: "Current page is 1 / 1"
       }), /* @__PURE__ */ this.$render("i-button", {
         id: "configRightBtn",
         icon: { name: "arrow-right" },
