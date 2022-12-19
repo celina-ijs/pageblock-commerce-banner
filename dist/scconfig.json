@@ -1,3 +1,20 @@
 {
-  "main": "{root}/commerce-banner.js"
+    "name": "@commerceBanner/main",
+    "version": "0.1.0",
+    "env": "",
+    "moduleDir": "modules",
+    "main": "@commerceBanner/main",
+    "modules": {
+        "@commerceBanner/main": {
+            "path": "main",
+            "dependencies": [
+                "@commerceBanner/global"
+            ]
+        },
+        "@commerceBanner/global": {
+            "path": "global",
+            "dependencies": []
+        }
+    },
+    "dependencies": {}
 }

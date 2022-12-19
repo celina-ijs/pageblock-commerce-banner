@@ -7,6 +7,10 @@
     "moduleResolution": "node",
     "outDir": "dist",
     "baseUrl": ".",
+    "paths": {
+      "@ijstech/components": ["node_modules/@ijstech/components"],
+      "@commerceBanner/*": ["src/*"]
+    }
   },
   "include": [
     "src/**/*.tsx",

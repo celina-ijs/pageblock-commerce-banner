@@ -1,14 +1,18 @@
 {
-  "name": "@pageblock/commerce-banner",
-  "version": "1.0.0",
-  "dependencies": {
-    "@ijstech/components": "^0.1.10"
-  },
+  "name": "@scom/pageblock-commerce-banner",
+  "author": "IJS Technologies",
+  "version": "0.1.0",
   "scripts": {
-    "build": "rm -rf dist && node esbuild.js && cp -f scconfig.json dist",
-    "cpbuild": "npm run build && cp ./dist/commerce-banner.js ../mindlink/dist"
+      "build": "rm -rf dist && npx @ijstech/compiler",
+      "serve": "npx @ijstech/cli serve 8080",
+      "test": "npm run build && npm run serve",
+      "cpbuild": "npm run build && cp ./dist/modules/main/index.js ../mindlink/dist"
   },
+  "keywords": [],
+  "license": "AGPL-3.0",
   "devDependencies": {
-    "esbuild": "^0.13.4"
+    "@ijstech/cli": "^0.1.28",
+    "@ijstech/compiler": "^0.1.22",
+    "@ijstech/components": "^0.1.34"
   }
 }
